@@ -1,0 +1,80 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}{{ recipe ? recipe.title : 'Recipe not available' }} - ForkLore{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/recipes.css') }}">
+{% endblock %}
+
+{% block content %}
+    {% if recipe %}
+    <main class="recipe-detail">
+        <div class="recipe-detail-image">
+            <img src="{{ asset(recipe.image) }}" alt="{{ recipe.title }}">
+        </div>
+
+        <div class="recipe-detail-content">
+            <div class="recipe-detail-tags">
+                <span class="recipe-category">{{ recipe.category }}</span>
+                {% if recipe.cuisine %}
+                    <a href="{{ path('recipes_index', { cuisine: recipe.cuisineSlug }) }}" class="badge recipe-cuisine-link">
+                        {{ recipe.cuisine }} Cuisine
+                    </a>
+                {% endif %}
+            </div>
+
+            <h1>{{ recipe.title }}</h1>
+
+            <p class="recipe-author recipe-author--detail">
+                <span>by <strong>{{ recipe.author }}</strong></span>
+            </p>
+
+            <div class="recipe-owner-actions">
+                <a href="{{ path('recipes_edit', { id: recipe.id }) }}" class="recipe-edit-btn">✏️ Edit Recipe</a>
+                <button type="button" class="recipe-delete-btn" disabled title="Deletion is disabled in this UI preview">🗑️ Delete Recipe</button>
+            </div>
+
+            <div class="recipe-favorite">
+                <button type="button" class="favorite-btn" disabled title="Favorites are not persisted in this UI preview">
+                    ♡ {{ recipe.totalLikes }} Favorite
+                </button>
+            </div>
+
+            <div class="preview-note preview-note--inline">
+                <span aria-hidden="true">⚡</span>
+                <span><strong>UI preview:</strong> favorites, editing, and deletion are display-only until the backend is connected.</span>
+            </div>
+
+            <section>
+                <h2>Ingredients</h2>
+                {% if recipe.ingredients is not empty %}
+                    <ul>
+                        {% for ingredient in recipe.ingredients %}
+                            <li>{{ ingredient }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No ingredients available.</p>
+                {% endif %}
+            </section>
+
+            <section>
+                <h2>Instructions</h2>
+                {% if recipe.instructions %}
+                    <p>{{ recipe.instructions|nl2br }}</p>
+                {% else %}
+                    <p>No instructions available.</p>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+    {% else %}
+    <main class="recipe-detail">
+        <div class="recipe-empty">
+            <h3>Recipe not available yet.</h3>
+            <p>Recipe details will appear here once the database is connected.</p>
+            <a href="{{ path('recipes_index') }}" class="primary-btn">Back to Recipes</a>
+        </div>
+    </main>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Forklore - Home{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/home.css') }}">
+{% endblock %}
+
+{% block content %}
+    <section class="hero">
+        <div class="hero-content">
+            <span class="badge">GLOBAL COMMUNITY COOKBOOK</span>
+            <h1>Every Recipe <br> Has a Story.</h1>
+            <p>Discover recipes passed down through generations, shared across borders, and cooked with love. Add your own story to the world's most personal cookbook.</p>
+
+            <div class="stats">
+                <div><strong>{{ stats.recipes|default('—') }}</strong><span>Recipes</span></div>
+                <div><strong>{{ stats.cuisines|default('—') }}</strong><span>Cuisines</span></div>
+                <div><strong>{{ stats.contributors|default('—') }}</strong><span>Contributors</span></div>
+            </div>
+
+            <a href="{{ path('share_recipe') }}" class="primary-btn">Share your Recipe</a>
+        </div>
+
+        {% if recipeOfTheWeek %}
+            <a href="{{ path('recipes_show', { id: recipeOfTheWeek.id }) }}" class="hero-card">
+                <img src="{{ asset(recipeOfTheWeek.image) }}" alt="{{ recipeOfTheWeek.title }}">
+                <div class="card-info">
+                    <h3>{{ recipeOfTheWeek.title }} - {{ recipeOfTheWeek.cuisine }} Dish</h3>
+                    <p>Recipe of the Week (♥ {{ recipeOfTheWeek.totalLikes }})</p>
+                </div>
+            </a>
+        {% else %}
+            <div class="hero-card hero-card--empty">
+                <span class="hero-card-emoji">🍲</span>
+                <h3>Recipe of the Week</h3>
+                <p>No recipes found yet. Be the first to add one!</p>
+                <a href="{{ path('share_recipe') }}" class="primary-btn">+ Add Recipe</a>
+            </div>
+        {% endif %}
+    </section>
+
+    <section class="featured">
+        <div class="section-header">
+            <h2>Featured Recipes</h2>
+            <a href="{{ path('recipes_index') }}">View all recipes &rarr;</a>
+        </div>
+
+        <div class="recipe-grid">
+            {% for recipe in featuredRecipes %}
+                <a href="{{ path('recipes_show', { id: recipe.id }) }}" class="recipe-card">
+                    <img src="{{ asset(recipe.image) }}" alt="{{ recipe.title }}">
+                    <h4>{{ recipe.title }}</h4>
+                    <p>{{ recipe.author }} • {{ recipe.cuisine }}</p>
+                </a>
+            {% else %}
+                <div class="recipe-card empty-featured-card">
+                    <p>No recipes found yet. Be the first to add one!</p>
+                    <a href="{{ path('share_recipe') }}" class="primary-btn">Share a Recipe &rarr;</a>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="cuisines">
+        <h2>Explore by Cuisines</h2>
+        <div class="cuisine-cards">
+            {% for cuisine in cuisines %}
+                <a href="{{ path('recipes_index', { cuisine: cuisine.slug }) }}"
+                   class="cuisine-tile"
+                   style="background-image: url('{{ asset(cuisine.image) }}');">
+                    <h3>{{ cuisine.name }}</h3>
+                    <span>View recipes &rarr;</span>
+                </a>
+            {% else %}
+                <p class="cuisines-empty">No cuisines available yet. Please check back later!</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="stories">
+        <span class="sub-heading">THE STORIES BEHIND THE FOOD</span>
+        <h2>Recipe Stories</h2>
+
+        {% if featuredStory %}
+            <div class="stories-container{{ otherStories is empty ? ' stories-container--single' : '' }}">
+                <a href="{{ path('stories_show', { id: featuredStory.id }) }}" class="main-story-card">
+                    <div class="story-img-wrapper">
+                        <img src="{{ asset(featuredStory.image) }}" alt="{{ featuredStory.title }}">
+                    </div>
+                    <div class="story-content">
+                        <div>
+                            <span class="location">{{ featuredStory.location }}</span>
+                            <h3>{{ featuredStory.title }}</h3>
+                            <blockquote>"{{ featuredStory.quote }}"</blockquote>
+                            <p class="author">- {{ featuredStory.author }}</p>
+                        </div>
+
+                        <div class="story-footer">
+                            <span class="saves-count"><b>{{ featuredStory.saves }}</b> saves</span>
+                            <span class="share-text">Read story &rarr;</span>
+                        </div>
+                    </div>
+                </a>
+
+                {% if otherStories is not empty %}
+                    <div class="story-list">
+                        {% for story in otherStories %}
+                            <a href="{{ path('stories_show', { id: story.id }) }}" class="story-item">
+                                <div class="story-thumb-placeholder">
+                                    <img src="{{ asset(story.image) }}" alt="{{ story.title }}">
+                                </div>
+                                <div>
+                                    <span class="location">{{ story.location }}</span>
+                                    <p>{{ story.title }}</p>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="stories-empty">
+                <h3>No stories shared yet!</h3>
+                <p>Community stories will appear here.</p>
+                <a href="{{ path('share_story') }}" class="primary-btn">+ Share Your Story</a>
+            </div>
+        {% endif %}
+    </section>
+
+    <section class="cta-banner">
+        <div class="cta-content">
+            <h2>Your recipe deserves to <br><span>be remembered.</span></h2>
+            <p>Share the recipes that have shaped your family, your culture, your life. Every dish you contribute becomes part of something bigger — a living archive of the world's culinary heritage.</p>
+
+            <div class="cta-buttons">
+                <a href="{{ path('share_recipe') }}" class="btn-primary-orange">Share a Recipe &rarr;</a>
+                <a href="{{ path('about') }}" class="btn-outline">Learn More</a>
+            </div>
+        </div>
+
+        <div class="cta-image-wrapper">
+            <img src="{{ asset('images/sabaw.jpg') }}" alt="Soup Bowl Asset">
+        </div>
+    </section>
+{% endblock %}

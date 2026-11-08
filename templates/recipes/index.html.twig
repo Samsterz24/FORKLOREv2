@@ -1,0 +1,122 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Explore Recipes - ForkLore{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/recipes.css') }}">
+{% endblock %}
+
+{% block content %}
+    <main class="recipes-page">
+        <section class="recipes-heading">
+            <h1>Explore Recipes</h1>
+            <p>Discover recipes shared by the ForkLore community.</p>
+        </section>
+
+        <section class="recipe-controls">
+            <form method="get" action="{{ path('recipes_index') }}">
+                <div class="recipe-search">
+                    <label class="visually-hidden" for="recipe-search-input">Search recipes</label>
+                    <input
+                        id="recipe-search-input"
+                        type="search"
+                        name="search"
+                        placeholder="Search recipes, categories, or creators..."
+                        value="{{ search }}"
+                    >
+                </div>
+
+                <div class="recipe-filters">
+                    <label class="visually-hidden" for="recipe-sort">Sort</label>
+                    <select name="sort" id="recipe-sort" class="recipe-filter">
+                        <option value="relevance" {{ sort == 'relevance' ? 'selected' : '' }}>Relevance</option>
+                        <option value="recent" {{ sort == 'recent' ? 'selected' : '' }}>Recently Posted</option>
+                        <option value="favorites" {{ sort == 'favorites' ? 'selected' : '' }}>Most Favorited</option>
+                        <option value="oldest" {{ sort == 'oldest' ? 'selected' : '' }}>Oldest First</option>
+                    </select>
+
+                    <label class="visually-hidden" for="recipe-category">Category</label>
+                    <select name="category" id="recipe-category" class="recipe-filter" {{ categories is empty ? 'disabled' : '' }}>
+                        <option value="all" {{ category == 'all' ? 'selected' : '' }}>All Categories</option>
+                        {% for categoryOption in categories %}
+                            <option value="{{ categoryOption }}" {{ category == categoryOption ? 'selected' : '' }}>{{ categoryOption }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label class="visually-hidden" for="recipe-cuisine">Cuisine</label>
+                    <select name="cuisine" id="recipe-cuisine" class="recipe-filter" {{ cuisines is empty ? 'disabled' : '' }}>
+                        <option value="all" {{ cuisine == 'all' or cuisine == '' ? 'selected' : '' }}>All Cuisines</option>
+                        {% for cuisineOption in cuisines %}
+                            <option value="{{ cuisineOption.slug }}"
+                                {{ cuisine|lower == cuisineOption.slug|lower or cuisine|lower == cuisineOption.name|lower ? 'selected' : '' }}>
+                                {{ cuisineOption.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <label class="visually-hidden" for="recipe-allergy">Allergy exclusion</label>
+                    <select name="allergy" id="recipe-allergy" class="recipe-filter">
+                        <option value="" {{ allergy == '' ? 'selected' : '' }}>No Allergy Exclusion</option>
+                        <option value="peanut" {{ allergy == 'peanut' ? 'selected' : '' }}>Exclude Peanuts</option>
+                        <option value="tree_nut" {{ allergy == 'tree_nut' ? 'selected' : '' }}>Exclude Tree Nuts</option>
+                        <option value="milk" {{ allergy == 'milk' ? 'selected' : '' }}>Exclude Dairy</option>
+                        <option value="egg" {{ allergy == 'egg' ? 'selected' : '' }}>Exclude Eggs</option>
+                        <option value="fish" {{ allergy == 'fish' ? 'selected' : '' }}>Exclude Fish</option>
+                        <option value="shellfish" {{ allergy == 'shellfish' ? 'selected' : '' }}>Exclude Shellfish</option>
+                        <option value="soy" {{ allergy == 'soy' ? 'selected' : '' }}>Exclude Soy</option>
+                        <option value="wheat" {{ allergy == 'wheat' ? 'selected' : '' }}>Exclude Wheat</option>
+                    </select>
+
+                    <a href="{{ path('recipes_index') }}" class="clear-filter">Clear Filters</a>
+                    <button type="submit" class="primary-btn filter-apply-btn">Apply</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="recipe-section">
+            <div class="recipe-section-header">
+                <h2>
+                    {% if selectedCuisineName %}
+                        {{ selectedCuisineName }} Cuisine
+                    {% elseif search != '' or category != 'all' or allergy != '' %}
+                        Recipe Results
+                    {% else %}
+                        For You
+                    {% endif %}
+                </h2>
+
+                <span class="recipe-result-count">
+                    {{ recipes|length }} {{ recipes|length == 1 ? 'recipe' : 'recipes' }}
+                </span>
+            </div>
+
+            <div class="recipe-grid">
+                {% for recipe in recipes %}
+                    <a href="{{ path('recipes_show', { id: recipe.id }) }}" class="recipe-card">
+                        <div class="recipe-image-wrapper">
+                            <img src="{{ asset(recipe.image) }}" alt="{{ recipe.title }}" class="recipe-image">
+                        </div>
+
+                        <div class="recipe-tags-row">
+                            <span class="recipe-category">{{ recipe.category }}</span>
+                            {% if recipe.cuisine %}
+                                <span class="recipe-cuisine-badge">{{ recipe.cuisine }}</span>
+                            {% endif %}
+                        </div>
+
+                        <h3 class="recipe-title">{{ recipe.title }}</h3>
+
+                        <p class="recipe-author">by {{ recipe.author }}</p>
+
+                        <p class="recipe-likes">♥ {{ recipe.totalLikes }} favorites</p>
+                    </a>
+                {% else %}
+                    <div class="recipe-empty">
+                        <h3>No recipes available yet.</h3>
+                        <p>Recipes will appear here once the database is connected.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+{% endblock %}

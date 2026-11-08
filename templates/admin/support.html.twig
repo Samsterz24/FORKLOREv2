@@ -1,0 +1,123 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Admin - Support Chat System | ForkLore{% endblock %}
+{% block admin_heading %}Support Desk{% endblock %}
+{% block admin_subheading %}Read conversations, reply to members, and move tickets through their states.{% endblock %}
+
+{% block admin_content %}
+    {% if notice %}
+        <div class="admin-alert admin-alert-success" role="status">✓ {{ notice }}</div>
+    {% endif %}
+
+    <div class="admin-chat-container">
+        <aside class="admin-tickets-column" aria-label="Support tickets">
+            <div class="admin-tickets-filter-bar">
+                <h2>
+                    <span>Support Tickets</span>
+                    <span class="admin-tickets-total">{{ tickets|length }} total</span>
+                </h2>
+                <div class="admin-filter-tabs">
+                    <a href="{{ path('admin_support', { status: 'all' }) }}" class="{{ status == 'all' ? 'active' : '' }}">All</a>
+                    <a href="{{ path('admin_support', { status: 'open' }) }}" class="{{ status == 'open' ? 'active' : '' }}">Open</a>
+                    <a href="{{ path('admin_support', { status: 'in_progress' }) }}" class="{{ status == 'in_progress' ? 'active' : '' }}">In Progress</a>
+                    <a href="{{ path('admin_support', { status: 'closed' }) }}" class="{{ status == 'closed' ? 'active' : '' }}">Closed</a>
+                </div>
+            </div>
+
+            <div class="admin-tickets-list">
+                {% for ticket in tickets %}
+                    <a href="{{ path('admin_support', { ticket_id: ticket.id, status: status }) }}"
+                       class="admin-ticket-item {{ ticket.id == selectedTicketId ? 'active' : '' }}">
+                        <div class="admin-ticket-item-top">
+                            <span class="admin-ticket-sender">{{ ticket.user }}</span>
+                            <span class="admin-ticket-time">{{ ticket.createdAt|date('M d') }}</span>
+                        </div>
+                        <div class="admin-ticket-subject">{{ ticket.subject }}</div>
+                        <div class="admin-ticket-item-bottom">
+                            <span class="admin-ticket-preview">
+                                {{ ticket.lastMessage|length > 32 ? ticket.lastMessage|slice(0, 32) ~ '...' : ticket.lastMessage }}
+                            </span>
+                            <span class="admin-badge admin-badge-{{ ticket.status }}">{{ ticket.status|replace({ '_': ' ' }) }}</span>
+                        </div>
+                    </a>
+                {% else %}
+                    <div class="admin-empty-inline admin-empty-inline--pad">No support tickets found in this category.</div>
+                {% endfor %}
+            </div>
+        </aside>
+
+        <section class="admin-thread-column" aria-label="Active ticket">
+            {% if activeTicket %}
+                <div class="admin-thread-header">
+                    <div class="admin-thread-user-info">
+                        <h3>{{ activeTicket.subject }}</h3>
+                        <p>
+                            From: <strong>{{ activeTicket.user }}</strong>
+                            ({{ activeTicket.email }}) &bull;
+                            Opened {{ activeTicket.createdAt|date('M d, Y H:i') }}
+                        </p>
+                    </div>
+
+                    <div class="admin-thread-actions">
+                        <form method="post" action="{{ path('admin_support', { status: status, ticket_id: activeTicket.id }) }}" class="admin-status-form">
+                            <input type="hidden" name="action" value="update_status">
+                            <input type="hidden" name="ticket_id" value="{{ activeTicket.id }}">
+                            <label class="visually-hidden" for="ticket-status">Ticket status</label>
+                            <select name="status" id="ticket-status" class="admin-status-select" onchange="this.form.submit()">
+                                <option value="open" {{ activeTicket.status == 'open' ? 'selected' : '' }}>Open</option>
+                                <option value="in_progress" {{ activeTicket.status == 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                                <option value="closed" {{ activeTicket.status == 'closed' ? 'selected' : '' }}>Closed</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="admin-messages-stream" id="admin-messages-container">
+                    {% for message in ticketMessages %}
+                        <div class="admin-message-bubble {{ message.isAdmin ? 'admin-message-admin' : 'admin-message-user' }}">
+                            <div class="admin-message-header">
+                                <span>
+                                    {% if message.isAdmin %}
+                                        🛡️ Admin ({{ message.sender }})
+                                    {% else %}
+                                        {{ message.sender }}
+                                    {% endif %}
+                                </span>
+                                <span>{{ message.createdAt|date('M d, H:i') }}</span>
+                            </div>
+                            <div class="admin-message-text">{{ message.message|nl2br }}</div>
+                        </div>
+                    {% else %}
+                        <p class="admin-empty-inline">No messages in this thread yet.</p>
+                    {% endfor %}
+                </div>
+
+                <div class="admin-reply-box-wrap">
+                    <form method="post" action="{{ path('admin_support', { status: status, ticket_id: activeTicket.id }) }}" class="admin-reply-form">
+                        <input type="hidden" name="action" value="send_reply">
+                        <input type="hidden" name="ticket_id" value="{{ activeTicket.id }}">
+                        <label class="visually-hidden" for="admin-reply-message">Reply to member</label>
+                        <textarea id="admin-reply-message" name="message" class="admin-reply-textarea"
+                                  placeholder="Write a helpful response to {{ activeTicket.user }}..." required></textarea>
+                        <button type="submit" class="admin-btn admin-btn-send">Reply &rarr;</button>
+                    </form>
+                </div>
+            {% else %}
+                <div class="admin-empty-thread">
+                    <div class="admin-empty-thread-icon" aria-hidden="true">💬</div>
+                    <h3>Select a Ticket</h3>
+                    <p>Choose a ticket from the left panel to inspect the conversation and send replies.</p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <script>
+        (function () {
+            var container = document.getElementById('admin-messages-container');
+            if (container) {
+                container.scrollTop = container.scrollHeight;
+            }
+        })();
+    </script>
+{% endblock %}

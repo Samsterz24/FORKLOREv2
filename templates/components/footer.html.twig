@@ -1,0 +1,44 @@
+<footer class="footer">
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <h3>FORKLORE</h3>
+            <p>A global community cookbook where every recipe carries a story. Discover, share,
+                and preserve culinary traditions from across generations and cultures.</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>DISCOVER</h4>
+            <ul>
+                <li><a href="{{ path('recipes_index') }}">Explore Recipes</a></li>
+                <li><a href="{{ path('cuisines_index') }}">By Cuisine</a></li>
+                <li><a href="{{ path('recipes_index', { sort: 'favorites' }) }}">Most Saved</a></li>
+                <li><a href="{{ path('recipes_index', { sort: 'recent' }) }}">New This Week</a></li>
+                <li><a href="{{ path('stories_index') }}">Recipe Stories</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h4>COMMUNITY</h4>
+            <ul>
+                <li><a href="{{ path('share_recipe') }}">Share a Recipe</a></li>
+                <li><a href="{{ path('share_story') }}">Tell Your Story</a></li>
+                <li><a href="{{ path('community_index') }}">Discussion Board</a></li>
+                <li><a href="{{ path('profile') }}">My Profile</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-col">
+            <h4>ABOUT</h4>
+            <ul>
+                <li><a href="{{ path('about') }}">Our Mission</a></li>
+                <li><a href="{{ path('contact') }}">Contact Support</a></li>
+                <li><a href="{{ path('login') }}">Login</a></li>
+                <li><a href="{{ path('register') }}">Create Account</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>&copy; 2026 Forklore. Recipes with roots, shared with love.</p>
+    </div>
+</footer>

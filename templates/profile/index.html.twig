@@ -1,0 +1,235 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}{{ profile ? profile.username ~ "'s Profile" : 'Profile' }} - ForkLore{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+    {% if profile %}
+    <main class="profile-page-wrapper">
+        <div class="profile-card">
+            <div class="profile-avatar-box">{{ profile.initial }}</div>
+
+            <div class="profile-details">
+                <div class="profile-user-header">
+                    <h1 class="profile-username">{{ profile.username }}</h1>
+                    <span class="role-badge {{ profile.role == 'admin' ? 'admin' : 'user' }}">
+                        {{ profile.role|upper }}
+                    </span>
+                    {% if profile.hasFoodieStamp %}
+                        <span class="foodie-badge">🏅 Foodie Stamp</span>
+                    {% endif %}
+                    {% if profile.status == 'banned' %}
+                        <span class="foodie-badge">BANNED</span>
+                    {% endif %}
+                </div>
+
+                <p class="profile-join-date">
+                    Member since {{ profile.joined }}
+                    {% if profile.hasFoodieStamp and profile.stampExpires %}
+                        <span class="stamp-active"> • Foodie Stamp active until {{ profile.stampExpires }}</span>
+                    {% endif %}
+                </p>
+
+                <div class="profile-bio" id="bio-display">
+                    {{ profile.bio|nl2br }}
+                </div>
+
+                <form method="post" action="{{ path('profile') }}" class="profile-bio-form" id="bio-form">
+                    <input type="hidden" name="update_profile" value="1">
+                    <label class="visually-hidden" for="profile-bio-input">Your bio</label>
+                    <textarea id="profile-bio-input" name="bio" rows="3" placeholder="Tell the community about your culinary roots...">{{ profile.bio }}</textarea>
+                    <div class="profile-bio-form-actions">
+                        <button type="submit" class="primary-btn">Save Bio</button>
+                        <button type="button" class="btn-edit-bio" onclick="toggleBioForm(false)">Cancel</button>
+                    </div>
+                </form>
+
+                <div class="profile-stats-strip">
+                    <span class="stat-item"><strong>{{ uploadedRecipes|length }}</strong> Recipes</span>
+                    <span class="stat-item"><strong>{{ savedRecipes|length }}</strong> Saved</span>
+                    <span class="stat-item"><strong>{{ submittedStories|length }}</strong> Stories</span>
+                </div>
+            </div>
+
+            <div class="profile-actions-bar">
+                <a href="{{ path('admin_dashboard') }}" class="admin-nav-pill">⚡ Admin Dashboard &rarr;</a>
+
+                <button type="button" class="foodie-stamp-btn" disabled title="Subscriptions are not part of this UI preview">
+                    🏅 Manage Foodie Stamp
+                </button>
+
+                <button type="button" class="btn-edit-bio" onclick="toggleBioForm(true)">✎ Edit Bio</button>
+            </div>
+        </div>
+
+        <div class="ai-sous-chef-teaser">
+            <div class="ai-sous-chef-main">
+                <div class="ai-sous-chef-icon" aria-hidden="true">🤖</div>
+                <div>
+                    <div class="ai-sous-chef-title">
+                        <h3>Personal AI Sous-Chef</h3>
+                        <span class="ai-preview-tag">Preview</span>
+                    </div>
+                    <p>
+                        Your upcoming smart kitchen companion. Auto-generate tailored grocery lists, substitute ingredients on the fly, and scale heritage recipes.
+                    </p>
+                </div>
+            </div>
+            <div>
+                {% if profile.hasFoodieStamp %}
+                    <span class="ai-priority-access">✓ Priority Access Reserved</span>
+                {% else %}
+                    <button type="button" class="ai-unlock-btn" disabled title="Subscriptions are not part of this UI preview">
+                        Unlock with Foodie Stamp ($2.99)
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="profile-nav-tabs">
+            <a href="{{ path('profile', { tab: 'recipes' }) }}" class="profile-tab-btn {{ tab == 'recipes' ? 'active' : '' }}">
+                📖 Uploaded Recipes <span class="tab-badge-count">{{ uploadedRecipes|length }}</span>
+            </a>
+            <a href="{{ path('profile', { tab: 'saved' }) }}" class="profile-tab-btn {{ tab == 'saved' ? 'active' : '' }}">
+                ♥ Saved / Liked Recipes <span class="tab-badge-count">{{ savedRecipes|length }}</span>
+            </a>
+            <a href="{{ path('profile', { tab: 'stories' }) }}" class="profile-tab-btn {{ tab == 'stories' ? 'active' : '' }}">
+                ✍️ Submitted Stories <span class="tab-badge-count">{{ submittedStories|length }}</span>
+            </a>
+        </div>
+
+        {% if tab == 'recipes' %}
+            {% if uploadedRecipes is empty %}
+                <div class="empty-state">
+                    <div class="empty-state-icon" aria-hidden="true">📖</div>
+                    <h3>No Recipes Uploaded Yet</h3>
+                    <p>You haven't uploaded any recipes yet. Ready to share a family tradition?</p>
+                    <a href="{{ path('share_recipe') }}" class="primary-btn">Share a Recipe</a>
+                </div>
+            {% else %}
+                <div class="profile-grid">
+                    {% for recipe in uploadedRecipes %}
+                        <div class="profile-card-stack">
+                            <a href="{{ path('recipes_show', { id: recipe.id }) }}" class="content-card">
+                                <div class="card-img-wrap">
+                                    <img src="{{ asset(recipe.image) }}" alt="{{ recipe.title }}">
+                                </div>
+                                <div class="card-body">
+                                    <div class="card-meta">
+                                        <span class="badge">{{ recipe.category }}</span>
+                                        {% if recipe.cuisine %}
+                                            <span class="badge badge-cuisine">{{ recipe.cuisine }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <h3 class="card-title">{{ recipe.title }}</h3>
+                                    <div class="card-footer">
+                                        <span>❤️ {{ recipe.totalLikes }} favorites</span>
+                                        <span>{{ recipe.createdAt|date('M d, Y') }}</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <div class="card-owner-actions">
+                                <a href="{{ path('recipes_edit', { id: recipe.id }) }}" class="card-edit-link">✏️ Edit</a>
+                                <button type="button" class="card-delete-btn" disabled title="Deletion is disabled in this UI preview">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% elseif tab == 'saved' %}
+            {% if savedRecipes is empty %}
+                <div class="empty-state">
+                    <div class="empty-state-icon" aria-hidden="true">♥</div>
+                    <h3>No Saved Recipes</h3>
+                    <p>You haven't saved or favorited any recipes yet. Explore our community cookbook and save dishes you love!</p>
+                    <a href="{{ path('recipes_index') }}" class="primary-btn">Explore Recipes</a>
+                </div>
+            {% else %}
+                <div class="profile-grid">
+                    {% for recipe in savedRecipes %}
+                        <a href="{{ path('recipes_show', { id: recipe.id }) }}" class="content-card">
+                            <div class="card-img-wrap">
+                                <img src="{{ asset(recipe.image) }}" alt="{{ recipe.title }}">
+                            </div>
+                            <div class="card-body">
+                                <div class="card-meta">
+                                    <span class="badge">{{ recipe.category }}</span>
+                                    {% if recipe.cuisine %}
+                                        <span class="badge badge-cuisine">{{ recipe.cuisine }}</span>
+                                    {% endif %}
+                                </div>
+                                <h3 class="card-title">{{ recipe.title }}</h3>
+                                <p class="card-author">By {{ recipe.author }}</p>
+                                <div class="card-footer">
+                                    <span>♥ {{ recipe.totalLikes }} favorites</span>
+                                    <span>{{ recipe.createdAt|date('M d, Y') }}</span>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% elseif tab == 'stories' %}
+            {% if submittedStories is empty %}
+                <div class="empty-state">
+                    <div class="empty-state-icon" aria-hidden="true">✍️</div>
+                    <h3>No Stories Submitted Yet</h3>
+                    <p>Every treasured family recipe carries a memory or story. Share your culinary heritage!</p>
+                    <a href="{{ path('share_story') }}" class="primary-btn">Share Your Story</a>
+                </div>
+            {% else %}
+                <div class="profile-grid">
+                    {% for story in submittedStories %}
+                        <a href="{{ path('stories_show', { id: story.id }) }}" class="content-card">
+                            <div class="card-img-wrap">
+                                <img src="{{ asset(story.image) }}" alt="{{ story.title }}">
+                            </div>
+                            <div class="card-body">
+                                <div class="card-meta">
+                                    <span class="badge badge-story">Story</span>
+                                    {% if story.location %}
+                                        <span class="badge badge-cuisine">{{ story.location }}</span>
+                                    {% endif %}
+                                </div>
+                                <h3 class="card-title">{{ story.title }}</h3>
+                                {% if story.quote %}
+                                    <p class="card-snippet">"{{ story.quote|slice(0, 110) }}{% if story.quote|length > 110 %}...{% endif %}"</p>
+                                {% endif %}
+                                <div class="card-footer">
+                                    <span>Saved {{ story.saves }} times</span>
+                                    <span>{{ story.createdAt|date('M d, Y') }}</span>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endif %}
+    </main>
+    {% else %}
+    <main class="profile-page-wrapper">
+        <div class="profile-card">
+            <div class="empty-state">
+                <div class="empty-state-icon" aria-hidden="true">👤</div>
+                <h3>Profile not available yet.</h3>
+                <p>Your profile will load here once the database and authentication are connected.</p>
+            </div>
+        </div>
+    </main>
+    {% endif %}
+
+    <script>
+        function toggleBioForm(show) {
+            var display = document.getElementById('bio-display');
+            var form = document.getElementById('bio-form');
+            if (!display || !form) {
+                return;
+            }
+            display.style.display = show ? 'none' : 'block';
+            form.style.display = show ? 'block' : 'none';
+        }
+    </script>
+{% endblock %}

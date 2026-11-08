@@ -1,0 +1,91 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Tell Your Recipe Story - ForkLore{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/share.css') }}">
+{% endblock %}
+
+{% block content %}
+    <main class="share-page">
+        <div class="share-intro">
+            <span class="share-eyebrow">PRESERVE FOOD MEMORIES</span>
+            <h2>Tell Your Recipe Story</h2>
+            <p>A recipe is more than ingredients on a page. Share the grandfather who taught you to barbecue, the celebration where this dish first appeared, or the aroma that brings you back home.</p>
+        </div>
+
+        <form action="{{ path('share_story') }}" method="post" enctype="multipart/form-data" class="share-form">
+            <div class="share-form-panel">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Story Title:</label>
+                    <input type="text" id="title" name="title" class="form-control" placeholder="e.g. My Mother's Secret Sunday Stew" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="location" class="form-label">Location / Origin:</label>
+                    <input type="text" id="location" name="location" class="form-control" placeholder="e.g. CEBU • PHILIPPINES or BOLOGNA • ITALY" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="author_name" class="form-label">Author Name:</label>
+                    <input type="text" id="author_name" name="author_name" class="form-control" value="{{ authorName }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="cuisine_id" class="form-label">Associated Cuisine (Optional):</label>
+                    <select id="cuisine_id" name="cuisine_id" class="form-select">
+                        <option value="">-- None / Select Cuisine --</option>
+                        {% for cuisine in cuisines %}
+                            <option value="{{ cuisine.id }}">{{ cuisine.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {% if userRecipes is not empty %}
+                    <div class="mb-3">
+                        <label for="recipe_id" class="form-label">Link to your Recipe (Optional):</label>
+                        <select id="recipe_id" name="recipe_id" class="form-select">
+                            <option value="">-- Do not link a recipe --</option>
+                            {% for recipe in userRecipes %}
+                                <option value="{{ recipe.id }}">{{ recipe.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label for="story_image" class="form-label">Story Photo:</label>
+                    <input type="file" id="story_image" name="story_image" class="form-control" accept="image/*" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="quote" class="form-label">Key Quote / Core Memory (1-2 sentences):</label>
+                    <textarea id="quote" name="quote" class="form-control" rows="3" placeholder="A single memorable quote or the essence of your story..." required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="story" class="form-label">The Full Story &amp; Narrative:</label>
+                    <textarea id="story" name="story" class="form-control" rows="8" placeholder="Tell us the history, the kitchen sounds, the people who cooked it, and why it matters..." required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="highlights" class="form-label">Story Highlights / Traditions (one per line):</label>
+                    <textarea id="highlights" name="highlights" class="form-control" rows="4" placeholder="Hand-ground native spices&#10;Simmered on an open hearth&#10;Shared every Christmas Eve"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Publish Story</button>
+            </div>
+
+            <div class="share-form-panel share-form-panel--details">
+                <div class="share-note">
+                    <strong>Storytelling Tips</strong>
+                    <ul>
+                        <li>Focus on sensory memories: the sizzle, smells, or tactile feel of the ingredients.</li>
+                        <li>Capture the person behind the pan — their quirks, philosophies, and gestures.</li>
+                        <li>Photos of family kitchens, vintage cookware, or shared meals bring stories to life!</li>
+                    </ul>
+                </div>
+            </div>
+        </form>
+    </main>
+{% endblock %}

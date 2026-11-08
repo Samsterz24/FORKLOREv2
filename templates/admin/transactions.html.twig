@@ -1,0 +1,143 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Subscription Transactions | ForkLore Admin{% endblock %}
+{% block admin_heading %}Subscription Transactions &amp; Audit Log{% endblock %}
+{% block admin_subheading %}Audit records for Lore Foodie Stamp memberships ($2.99/mo &amp; $29.99/yr).{% endblock %}
+
+{% block admin_content %}
+    <section class="admin-stats-grid">
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon admin-icon-revenue">💰</div>
+            <div class="admin-stat-meta">
+                <p>Total Revenue</p>
+                <h3>{{ stats.revenue is not null ? '$' ~ stats.revenue|number_format(2, '.', ',') : '—' }}</h3>
+                <span class="admin-stat-pending">Database pending</span>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon admin-icon-txns">🧾</div>
+            <div class="admin-stat-meta">
+                <p>Completed Payments</p>
+                <h3>{{ stats.completed is not null ? stats.completed|number_format : '—' }}</h3>
+                <span class="admin-stat-pending">Database pending</span>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon admin-icon-subscribers">🏅</div>
+            <div class="admin-stat-meta">
+                <p>Active Foodie Stamps</p>
+                <h3>{{ stats.activeStamps is not null ? stats.activeStamps|number_format : '—' }}</h3>
+                <span class="admin-stat-pending">Database pending</span>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon admin-icon-method">💳</div>
+            <div class="admin-stat-meta">
+                <p>Top Payment Method</p>
+                <h3 class="admin-stat-small">{{ stats.topMethod ?? '—' }}</h3>
+                <span class="admin-stat-pending">Database pending</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="admin-controls-card">
+        <form method="get" action="{{ path('admin_transactions') }}" class="admin-filters-form">
+            <label class="visually-hidden" for="transaction-search">Search transactions</label>
+            <input type="text" id="transaction-search" name="search" class="admin-form-control admin-search-control"
+                   placeholder="Search ref code, username, or email..." value="{{ search }}">
+
+            <label class="visually-hidden" for="transaction-method">Payment method</label>
+            <select id="transaction-method" name="method" class="admin-form-control">
+                <option value="all" {{ method == 'all' ? 'selected' : '' }}>All Payment Methods</option>
+                {% for option in methods %}
+                    <option value="{{ option }}" {{ method == option ? 'selected' : '' }}>{{ option }}</option>
+                {% endfor %}
+            </select>
+
+            <label class="visually-hidden" for="transaction-status">Status</label>
+            <select id="transaction-status" name="status" class="admin-form-control">
+                <option value="all" {{ status == 'all' ? 'selected' : '' }}>All Statuses</option>
+                {% for option in statuses %}
+                    <option value="{{ option }}" {{ status == option ? 'selected' : '' }}>{{ option|capitalize }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="admin-btn admin-btn-filter">Filter Records</button>
+
+            {% if search != '' or method != 'all' or status != 'all' %}
+                <a href="{{ path('admin_transactions') }}" class="admin-btn-reset">Clear Filters</a>
+            {% endif %}
+        </form>
+
+        <div class="admin-muted">
+            Showing <strong>{{ transactions|length }}</strong> transaction records
+        </div>
+    </section>
+
+    <section class="admin-section-card">
+        <div class="admin-table-responsive">
+            <table class="admin-table admin-transactions-table">
+                <thead>
+                    <tr>
+                        <th class="admin-col-id">ID</th>
+                        <th>Reference</th>
+                        <th>User / Customer</th>
+                        <th>Amount</th>
+                        <th>Payment Method</th>
+                        <th>Status</th>
+                        <th>Foodie Badge</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                        <tr>
+                            <td class="admin-muted"><strong>#{{ transaction.id }}</strong></td>
+                            <td><span class="admin-ref-code">{{ transaction.reference }}</span></td>
+                            <td>
+                                <div class="admin-user-cell">
+                                    <div class="admin-user-avatar">{{ transaction.user|slice(0, 1)|upper }}</div>
+                                    <div class="admin-user-info">
+                                        <div class="admin-user-name">{{ transaction.user }}</div>
+                                        <div class="admin-user-email">{{ transaction.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="admin-amount-highlight">${{ transaction.amount|number_format(2, '.', ',') }}</span></td>
+                            <td>
+                                <span class="admin-method-tag">
+                                    {{ transaction.method|lower == 'mock gcash' ? '📱' : '💳' }}
+                                    {{ transaction.method }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="admin-badge admin-badge-{{ transaction.status }}">
+                                    {{ transaction.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if transaction.foodieActive %}
+                                    <span class="admin-foodie-active">🏅 Active</span>
+                                    <div class="admin-foodie-expiry">Exp: {{ transaction.expires ? transaction.expires|date('M d, Y') : 'N/A' }}</div>
+                                {% else %}
+                                    <span class="admin-foodie-inactive">Expired / Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td class="admin-timestamp">
+                                <div>{{ transaction.createdAt|date('M d, Y') }}</div>
+                                <div class="admin-muted">{{ transaction.createdAt|date('h:i:s A') }}</div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="admin-empty-cell">No subscription transactions found matching your criteria.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}

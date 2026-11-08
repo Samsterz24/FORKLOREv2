@@ -1,0 +1,73 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}About Us - ForkLore{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/about.css') }}">
+{% endblock %}
+
+{% block content %}
+    <main class="about-page">
+        <section class="about-hero">
+            <span class="about-label">OUR STORY</span>
+            <h1>More Than Just<br>Recipes.</h1>
+            <p>
+                ForkLore began with a simple idea: to give Mom a place where she could
+                write down the recipes she knew and loved.
+            </p>
+        </section>
+
+        <section class="about-story">
+            <div class="about-story-heading">
+                <span class="about-label">WHY FORKLORE EXISTS</span>
+                <h2>A recipe can be<br>more than a recipe.</h2>
+            </div>
+            <div class="about-story-content">
+                <p>
+                    The original idea behind ForkLore was simple. I wanted to give Mom
+                    a journal where she could keep the recipes she knew, the meals she
+                    loved making, and the memories that came with them.
+                </p>
+                <p>
+                    That idea eventually grew into something bigger: a digital recipe
+                    journal where recipes can be preserved, shared, and discovered.
+                    Instead of letting those recipes stay hidden in notebooks or get
+                    forgotten over time, ForkLore gives them a place to live.
+                </p>
+                <p>
+                    What started as a small idea for a personal gift became a platform
+                    for celebrating the stories behind food and the people who keep
+                    those traditions alive.
+                </p>
+            </div>
+        </section>
+
+        <section class="about-highlight">
+            <div class="about-highlight-content">
+                <span class="about-label">THE IDEA</span>
+                <h2>
+                    Preserving recipes.<br>
+                    Making room for new stories.
+                </h2>
+                <p>
+                    ForkLore is built around the belief that food connects people.
+                    Every recipe can carry a memory, a tradition, a place, or a person
+                    behind it.
+                </p>
+            </div>
+        </section>
+
+        <section class="about-ending">
+            <span class="about-label">OUR HOPE</span>
+            <h2>
+                Because sometimes,<br>
+                the best memories<br>
+                begin with food.
+            </h2>
+            <p>
+                ForkLore is our way of keeping those recipes around while giving new
+                ones a chance to become part of the story.
+            </p>
+        </section>
+    </main>
+{% endblock %}

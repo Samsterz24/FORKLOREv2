@@ -1,0 +1,92 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Share a New Recipe - ForkLore{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/share.css') }}">
+{% endblock %}
+
+{% block content %}
+    <main class="share-page">
+        <div class="share-intro">
+            <span class="share-eyebrow">ADD TO THE COMMUNITY COOKBOOK</span>
+            <h2>Share a New Recipe</h2>
+            <p>Write down the dish your family asks for by name. Clear measurements, a good photo, and the small details are what make a recipe worth keeping.</p>
+        </div>
+
+        <form action="{{ path('share_recipe') }}" method="post" enctype="multipart/form-data" class="share-form">
+            <div class="share-form-panel">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Recipe Title:</label>
+                    <input type="text" id="title" name="title" class="form-control" placeholder="e.g. Your family's signature dish" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="cuisine_id" class="form-label">Cuisine / Origin:</label>
+                    <select id="cuisine_id" name="cuisine_id" class="form-select">
+                        <option value="">-- Select Cuisine (Optional) --</option>
+                        {% for cuisine in cuisines %}
+                            <option value="{{ cuisine.id }}">{{ cuisine.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="category" class="form-label">Category:</label>
+                    <select id="category" name="category" class="form-select" required>
+                        {% for category in categories %}
+                            <option value="{{ category }}">{{ category }}</option>
+                        {% else %}
+                            <option value="" disabled selected>No categories available yet</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="recipe_image" class="form-label">Recipe Image:</label>
+                    <input type="file" id="recipe_image" name="recipe_image" class="form-control" accept="image/*" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="ingredients" class="form-label">Ingredients (one per line):</label>
+                    <textarea id="ingredients" name="ingredients" class="form-control" rows="5" placeholder="2 cups Flour&#10;1 tsp Salt&#10;1 cup Milk" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="instructions" class="form-label">Instructions / Steps:</label>
+                    <textarea id="instructions" name="instructions" class="form-control" rows="8" placeholder="1. Mix dry ingredients...&#10;2. Preheat oven..." required></textarea>
+                </div>
+
+                <div class="mb-3 monetization-box">
+                    <label class="monetization-label">💰 Recipe Monetization</label>
+                    {% if hasFoodieStamp %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="is_monetized" value="1" id="is_monetized">
+                            <label class="form-check-label" for="is_monetized">
+                                <strong>Exclusive Recipe:</strong> Lock this recipe for Lore Foodie Stamp subscribers to earn monetization revenue.
+                            </label>
+                        </div>
+                    {% else %}
+                        <p class="monetization-note">
+                            Lock your recipes behind the paywall to earn creator revenue with a
+                            <span class="monetization-link">Lore Foodie Stamp ($2.99/mo)</span>.
+                        </p>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-primary">Publish Recipe</button>
+            </div>
+
+            <div class="share-form-panel share-form-panel--details">
+                <div class="share-note">
+                    <strong>Recipe Tips</strong>
+                    <ul>
+                        <li>Keep measurements clear and specific.</li>
+                        <li>Add notes about preparation or the story behind the dish.</li>
+                        <li>High-resolution photos make your recipe stand out!</li>
+                    </ul>
+                </div>
+            </div>
+        </form>
+    </main>
+{% endblock %}

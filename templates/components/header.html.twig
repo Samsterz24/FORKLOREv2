@@ -1,0 +1,28 @@
+{% set currentRoute = app.request.attributes.get('_route') %}
+{% set isRecipes = currentRoute starts with 'recipes_' %}
+{% set isCuisines = currentRoute starts with 'cuisines_' %}
+{% set isStories = currentRoute starts with 'stories_' %}
+{% set isCommunity = currentRoute starts with 'community_' %}
+
+<header class="header">
+    <a href="{{ path('home') }}" class="logo">
+        <img src="{{ asset('images/LOGO.png') }}" alt="ForkLore Logo" class="logo-img">
+        <b>FORKLORE</b>
+    </a>
+
+    <nav aria-label="Main navigation">
+        <a href="{{ path('home') }}" class="{{ currentRoute == 'home' ? 'active' : '' }}">Home</a>
+        <a href="{{ path('recipes_index') }}" class="{{ isRecipes ? 'active' : '' }}">Explore Recipes</a>
+        <a href="{{ path('cuisines_index') }}" class="{{ isCuisines ? 'active' : '' }}">Cuisines</a>
+        <a href="{{ path('stories_index') }}" class="{{ isStories ? 'active' : '' }}">Stories</a>
+        <a href="{{ path('community_index') }}" class="{{ isCommunity ? 'active' : '' }}">Community</a>
+        <a href="{{ path('contact') }}" class="{{ currentRoute == 'contact' ? 'active' : '' }}">💬 Support</a>
+    </nav>
+
+    <div class="auth-btn-group">
+        {# UI preview: admin is reachable without authentication until the real login flow exists. #}
+        <a href="{{ path('admin_dashboard') }}" class="admin-nav-pill" title="Temporary UI-preview shortcut">⚡ Admin</a>
+        <a href="{{ path('login') }}" class="login-nav-btn">Login</a>
+        <a href="{{ path('register') }}" class="register-nav-btn">Register</a>
+    </div>
+</header>

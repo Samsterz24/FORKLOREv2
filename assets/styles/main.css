@@ -1,0 +1,355 @@
+/* global reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #17120d;
+    background-color: #fffaf0;
+    overflow-x: hidden;
+}
+
+/* reusables (buttons etc)*/
+.primary-btn {
+    background: #d3541b;
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.primary-btn:hover {
+    background-color: #b84313;
+    transform: translateY(-2px);
+}
+
+.badge {
+    background: #fdf2e9;
+    color: #d3541b;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    display: inline-block;
+}
+
+/* ulo */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 14%;
+    background-color: #fbb03b;
+    border-bottom: 1px solid #f0e9dd;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: Garamond, serif;
+    font-size: 20px;
+    letter-spacing: 1px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.logo-img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+}
+
+.header nav {
+    display: flex;
+    gap: 30px;
+}
+
+.header nav a {
+    text-decoration: none;
+    color: #5c5346;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.header nav a:hover {
+    color: #d3541b;
+}
+
+.share-btn {
+    background: #d3541b;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.2s ease;
+}
+
+.share-btn:hover {
+    background-color: #b84313;
+}
+
+/* Header Auth & Profile Badges */
+.auth-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.login-nav-btn {
+    text-decoration: none;
+    color: #5c5346;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 8px 16px;
+    transition: color 0.2s ease;
+}
+
+.login-nav-btn:hover {
+    color: #d3541b;
+}
+
+.register-nav-btn {
+    background: #d3541b;
+    color: #ffffff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 13px;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.2s ease;
+}
+
+.register-nav-btn:hover {
+    background-color: #b84313;
+}
+
+.user-profile-nav {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.profile-badge {
+    background-color: #fffaf0;
+    color: #17120d;
+    padding: 6px 14px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: bold;
+    border: 1px solid #e8decb;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.profile-badge:hover {
+    background-color: #f7efe1;
+    border-color: #d3541b;
+}
+
+.logout-link {
+    color: #d3541b;
+    font-size: 12px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.logout-link:hover {
+    text-decoration: underline;
+    opacity: 0.85;
+}
+
+/* tiil? */
+.footer {
+    position: relative;
+    z-index: 10;
+    background: #17120d;
+    color: #b5a999;
+    padding: 50px 14% 30px 14%;
+    border-top: 1px solid #2b231b;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.footer-brand h3 {
+    color: white;
+    font-family: Garamond, serif;
+    margin: 0 0 15px 0;
+    letter-spacing: 1px;
+}
+
+.footer-brand p {
+    font-size: 13px;
+    line-height: 1.6;
+    max-width: 280px;
+}
+
+.footer-col h4 {
+    color: white;
+    font-size: 12px;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+}
+
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-col ul li {
+    margin-bottom: 8px;
+}
+
+.footer-col ul li a {
+    color: #b5a999;
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.2s;
+}
+
+.footer-col ul li a:hover {
+    color: #ffffff;
+}
+
+.footer-bottom {
+    border-top: 1px solid #28211a;
+    padding-top: 20px;
+    font-size: 12px;
+    color: #7a6e5d;
+}
+
+/* med quer */
+@media (max-width: 1024px) {
+    .header, .footer {
+        padding-left: 6%;
+        padding-right: 6%;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .header nav {
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .footer-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* Symfony UI preview additions                                        */
+/* ------------------------------------------------------------------ */
+
+.header nav a.active {
+    color: #d3541b;
+    font-weight: 700;
+}
+
+.admin-nav-pill {
+    background: #d3541b;
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+.admin-nav-pill:hover {
+    background-color: #b84313;
+}
+
+.preview-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 1120px;
+    margin: 18px auto 0;
+    padding: 11px 16px;
+    border: 1px dashed #e2c89a;
+    border-radius: 10px;
+    background: #fdf5e8;
+    color: #7a5a2e;
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+.preview-note strong {
+    color: #17120d;
+}
+
+.flash-message {
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 28px;
+}
+
+.flash-message.success {
+    background: #f0faf0;
+    border: 1px solid #8bc99b;
+    color: #2d6b3c;
+}
+
+.flash-message.error {
+    background: #fff5f5;
+    border: 1px solid #f5b7b7;
+    color: #8b2020;
+}
+
+.page-flash-wrap {
+    width: 72%;
+    max-width: 1100px;
+    margin: 24px auto 0;
+}
+
+.visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}

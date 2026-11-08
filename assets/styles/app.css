@@ -1,3 +1,5 @@
-body {
-    background-color: skyblue;
-}
+/*
+ * Global application styles are loaded per page from assets/styles/main.css.
+ * This file is intentionally empty; page-specific CSS lives beside it and is
+ * included with the Twig `page_styles` block.
+ */

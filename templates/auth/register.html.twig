@@ -1,0 +1,45 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Register - ForkLore{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+    <main class="auth-container">
+        <div class="auth-card">
+            <h2>Join ForkLore</h2>
+
+            <p class="auth-subtitle">Create an account to share your recipes and stories.</p>
+
+            <form action="{{ path('register') }}" method="post" class="auth-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" id="username" value="{{ submittedUsername }}" autocomplete="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" name="email" id="email" value="{{ submittedEmail }}" autocomplete="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password" autocomplete="new-password" minlength="6" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password</label>
+                    <input type="password" name="confirm_password" id="confirm_password" autocomplete="new-password" minlength="6" required>
+                </div>
+
+                <button type="submit" class="primary-btn auth-submit-btn">Register</button>
+            </form>
+
+            <p class="auth-footer-text">
+                Already have an account? <a href="{{ path('login') }}">Login here</a>
+            </p>
+        </div>
+    </main>
+{% endblock %}

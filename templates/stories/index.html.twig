@@ -1,0 +1,83 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Recipe Stories - ForkLore{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/stories.css') }}">
+{% endblock %}
+
+{% block content %}
+    <main class="stories-page">
+        <div class="stories-header">
+            <div class="stories-header-text">
+                <span class="badge">THE STORIES BEHIND THE FOOD</span>
+                <h1>Recipe Stories</h1>
+                <p>Every dish has roots. Explore the memories, ancestral traditions, and heartwarming moments that give each recipe its soul.</p>
+            </div>
+
+            <div class="stories-actions">
+                <a href="{{ path('share_story') }}" class="primary-btn">+ Tell Your Story</a>
+            </div>
+        </div>
+
+        {% if featuredStory %}
+            <a href="{{ path('stories_show', { id: featuredStory.id }) }}" class="featured-story-hero">
+                <div class="story-hero-img">
+                    <img src="{{ asset(featuredStory.image) }}" alt="{{ featuredStory.title }}">
+                </div>
+                <div class="story-hero-body">
+                    <div>
+                        <div class="story-badge-row">
+                            <span class="story-location-tag">{{ featuredStory.location }}</span>
+                            {% if featuredStory.cuisine %}
+                                <span class="badge story-cuisine-badge">{{ featuredStory.cuisine }}</span>
+                            {% endif %}
+                        </div>
+                        <h2>{{ featuredStory.title }}</h2>
+                        <blockquote>"{{ featuredStory.quote }}"</blockquote>
+                        <p class="author">&mdash; {{ featuredStory.author }}</p>
+                    </div>
+
+                    <div class="story-footer">
+                        <span class="saves-count"><b>{{ featuredStory.saves }}</b> saves</span>
+                        <span class="share-text">Read full story &rarr;</span>
+                    </div>
+                </div>
+            </a>
+        {% endif %}
+
+        {% if otherStories is not empty %}
+            <h2 class="stories-grid-title">More Community Traditions</h2>
+            <div class="stories-grid">
+                {% for story in otherStories %}
+                    <a href="{{ path('stories_show', { id: story.id }) }}" class="story-grid-card">
+                        <div class="story-card-img">
+                            <img src="{{ asset(story.image) }}" alt="{{ story.title }}">
+                        </div>
+                        <div class="story-card-body">
+                            <div>
+                                <div class="story-badge-row">
+                                    <span class="story-location-tag">{{ story.location }}</span>
+                                </div>
+                                <h3>{{ story.title }}</h3>
+                                <blockquote>"{{ story.quote }}"</blockquote>
+                            </div>
+                            <div class="story-footer">
+                                <span class="author">&mdash; {{ story.author }}</span>
+                                <span class="share-text">Read &rarr;</span>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% elseif not featuredStory %}
+            <div class="stories-empty">
+                <h3>No stories shared yet!</h3>
+                <p>Community stories will appear here.</p>
+                <div class="stories-empty-action">
+                    <a href="{{ path('share_story') }}" class="primary-btn">+ Share Your Story</a>
+                </div>
+            </div>
+        {% endif %}
+    </main>
+{% endblock %}

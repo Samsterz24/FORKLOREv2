@@ -1,0 +1,82 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}{{ story ? story.title : 'Story not available' }} - ForkLore Stories{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/stories.css') }}">
+{% endblock %}
+
+{% block content %}
+    {% if story %}
+    <main class="story-detail-page">
+        <a href="{{ path('stories_index') }}" class="story-detail-back">&larr; Back to all stories</a>
+
+        <header class="story-detail-header">
+            <div class="story-badge-row">
+                <span class="story-location-tag">{{ story.location }}</span>
+                {% if story.cuisine %}
+                    <a href="{{ path('recipes_index', { cuisine: story.cuisineSlug }) }}" class="badge story-cuisine-badge">
+                        {{ story.cuisine }} Cuisine
+                    </a>
+                {% endif %}
+            </div>
+
+            <h1>{{ story.title }}</h1>
+
+            <div class="story-meta-row">
+                <span>By <b>{{ story.author }}</b></span>
+                <span>&bull;</span>
+                <span>{{ story.createdAt|date('F j, Y') }}</span>
+                <span>&bull;</span>
+                <span>♥ {{ story.saves }} saves</span>
+            </div>
+        </header>
+
+        <div class="story-detail-banner">
+            <img src="{{ asset(story.image) }}" alt="{{ story.title }}">
+        </div>
+
+        {% if story.quote %}
+            <blockquote class="story-pull-quote">
+                "{{ story.quote }}"
+            </blockquote>
+        {% endif %}
+
+        <article class="story-narrative">
+            {{ story.narrative|nl2br }}
+        </article>
+
+        {% if story.highlights is not empty %}
+            <div class="story-highlights-box">
+                <h3>Traditions &amp; Story Highlights</h3>
+                <ul>
+                    {% for highlight in story.highlights %}
+                        <li>{{ highlight }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {% if story.recipeId and story.recipeTitle %}
+            <div class="story-related-recipe">
+                <div>
+                    <span class="story-related-label">Related Community Recipe</span>
+                    <h4>{{ story.recipeTitle }}</h4>
+                </div>
+                <a href="{{ path('recipes_show', { id: story.recipeId }) }}" class="primary-btn">View Recipe &rarr;</a>
+            </div>
+        {% endif %}
+    </main>
+    {% else %}
+    <main class="story-detail-page">
+        <a href="{{ path('stories_index') }}" class="story-detail-back">&larr; Back to all stories</a>
+        <div class="stories-empty">
+            <h3>No story available yet.</h3>
+            <p>Story details will appear here once the database is connected.</p>
+            <div class="stories-empty-action">
+                <a href="{{ path('share_story') }}" class="primary-btn">+ Share Your Story</a>
+            </div>
+        </div>
+    </main>
+    {% endif %}
+{% endblock %}

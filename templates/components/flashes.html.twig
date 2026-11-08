@@ -1,0 +1,26 @@
+{% set hasFlash = false %}
+{% for type, messages in app.flashes %}
+    {% for message in messages %}
+        {% set hasFlash = true %}
+    {% endfor %}
+{% endfor %}
+{% set hasNotice = notice is defined and notice %}
+
+{% if hasFlash or hasNotice %}
+    <div class="page-flash-wrap">
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="flash-message {{ type == 'success' ? 'success' : 'error' }}" role="status">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {% if hasNotice %}
+            <div class="preview-note" role="status">
+                <span aria-hidden="true">⚡</span>
+                <span><strong>UI preview:</strong> {{ notice }}</span>
+            </div>
+        {% endif %}
+    </div>
+{% endif %}

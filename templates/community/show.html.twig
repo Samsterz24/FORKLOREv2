@@ -1,0 +1,93 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}{{ post ? post.title : 'Discussion not available' }} — ForkLore Community{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/community.css') }}">
+{% endblock %}
+
+{% block content %}
+    {% if post %}
+    <main class="post-detail-page">
+        <a href="{{ path('community_index') }}" class="back-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Back to Community
+        </a>
+
+        <div class="post-hero">
+            <div class="post-hero-meta">
+                <div class="post-hero-avatar">{{ post.initial }}</div>
+                <div class="post-hero-byline">
+                    <strong>{{ post.author }}</strong>
+                    <span>{{ post.createdAt|date('F j, Y \\a\\t g:i A') }}</span>
+                </div>
+                <span class="cat-badge {{ post.categoryClass }} post-hero-category">{{ post.category }}</span>
+            </div>
+
+            <h1>{{ post.title }}</h1>
+
+            <div class="post-hero-content">
+                {{ post.content }}
+            </div>
+        </div>
+
+        <section class="replies-section" id="replies">
+            <h2 class="replies-section-header">
+                Replies
+                <span class="reply-total">{{ post.replies|length }}</span>
+            </h2>
+
+            {% if post.replies is not empty %}
+                <div class="reply-list">
+                    {% for reply in post.replies %}
+                        <div class="reply-card">
+                            <div class="reply-card-top">
+                                <div class="reply-avatar">{{ reply.author|slice(0, 1)|upper }}</div>
+                                <span class="reply-author">{{ reply.author }}</span>
+                                <span class="reply-date">{{ reply.createdAt|date('M j, Y \\a\\t g:i A') }}</span>
+                            </div>
+                            <p class="reply-text">{{ reply.comment }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-replies">
+                    No replies yet &mdash; be the first to join the conversation!
+                </div>
+            {% endif %}
+        </section>
+
+        <div class="reply-form-box">
+            <h2>Leave a Reply</h2>
+            <form method="post" action="{{ path('community_show', { id: post.id }) }}">
+                <div class="form-group">
+                    <label for="comment">Your Reply</label>
+                    <textarea
+                        id="comment"
+                        name="comment"
+                        rows="5"
+                        placeholder="Share your thoughts, answer the question, or add to the discussion…"
+                        required
+                    ></textarea>
+                </div>
+                <button type="submit" class="reply-submit-btn">Post Reply &rarr;</button>
+            </form>
+        </div>
+    </main>
+    {% else %}
+    <main class="post-detail-page">
+        <a href="{{ path('community_index') }}" class="back-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Back to Community
+        </a>
+        <div class="empty-feed">
+            <h3>No discussion available yet.</h3>
+            <p>Discussions will appear here once the database is connected.</p>
+        </div>
+    </main>
+    {% endif %}
+{% endblock %}

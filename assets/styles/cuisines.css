@@ -1,0 +1,124 @@
+/* CUISINES PAGE (mga lami nga pagkaon gikan sa kalibutan) */
+
+.cuisines-page {
+    width: 72%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 0 90px;
+}
+
+.cuisines-heading {
+    margin-bottom: 40px;
+}
+
+.cuisines-heading h1 {
+    font-family: Garamond, serif;
+    font-size: 48px;
+    margin-bottom: 10px;
+    color: #17120d;
+}
+
+.cuisines-heading p {
+    color: #756b5f;
+    font-size: 15px;
+}
+
+/* cuisine cards grid (mura kag nag tour pero wala kay kwarta) */
+
+.cuisines-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 25px;
+}
+
+.cuisine-card {
+    display: block;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    text-decoration: none;
+    aspect-ratio: 16 / 10;
+    background: #eee4d5;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.cuisine-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.cuisine-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.35s ease;
+}
+
+.cuisine-card:hover img {
+    transform: scale(1.06);
+}
+
+/* overlay para mabasa ang text bisan bati ang pic */
+
+.cuisine-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(23, 18, 13, 0.15) 0%, rgba(23, 18, 13, 0.85) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 22px;
+    color: #ffffff;
+}
+
+.cuisine-overlay h2 {
+    font-family: Garamond, serif;
+    font-size: 26px;
+    margin: 0 0 4px;
+    color: #ffffff;
+}
+
+.cuisine-desc {
+    font-size: 13px;
+    line-height: 1.35;
+    opacity: 0.9;
+    margin: 0 0 8px;
+    color: #f5eee4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cuisine-overlay span {
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.9;
+    letter-spacing: 0.5px;
+    color: #fbb03b;
+}
+
+/* responsive grid baseline (ayaw intawon guba-a sa mobile) */
+
+@media (max-width: 900px) {
+    .cuisines-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 550px) {
+    .cuisines-grid {
+        grid-template-columns: 1fr;
+    }
+}
+.cuisines-grid:empty::after,
+.cuisines-empty {
+    display: block;
+    grid-column: 1 / -1;
+    padding: 54px 26px;
+    text-align: center;
+    color: #7a6e5d;
+    font-size: 14px;
+}

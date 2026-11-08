@@ -1,0 +1,146 @@
+{% extends 'base.html.twig' %}
+
+{% set currentAdminRoute = app.request.attributes.get('_route') %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/admin.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="admin-shell" id="admin-shell">
+        <aside class="admin-sidebar" id="admin-sidebar" aria-label="Admin navigation">
+            <div class="admin-sidebar-brand">
+                <a href="{{ path('admin_dashboard') }}" class="admin-brand-link">
+                    <img src="{{ asset('images/LOGO.png') }}" alt="ForkLore Logo" class="admin-brand-logo">
+                    <span>
+                        <strong>FORKLORE</strong>
+                        <small>Admin Studio</small>
+                    </span>
+                </a>
+                <button type="button" class="admin-collapse-btn" id="admin-collapse-btn" aria-label="Collapse sidebar" title="Collapse sidebar">&#10094;</button>
+            </div>
+
+            <nav class="admin-nav" aria-label="Admin sections">
+                <span class="admin-nav-label">Manage</span>
+
+                <a href="{{ path('admin_dashboard') }}" class="admin-nav-link {{ currentAdminRoute == 'admin_dashboard' ? 'active' : '' }}">
+                    <span class="admin-nav-icon" aria-hidden="true">📊</span>
+                    <span class="admin-nav-text">Dashboard</span>
+                </a>
+
+                <a href="{{ path('admin_users') }}" class="admin-nav-link {{ currentAdminRoute == 'admin_users' ? 'active' : '' }}">
+                    <span class="admin-nav-icon" aria-hidden="true">👥</span>
+                    <span class="admin-nav-text">Users</span>
+                </a>
+
+                <a href="{{ path('admin_transactions') }}" class="admin-nav-link {{ currentAdminRoute == 'admin_transactions' ? 'active' : '' }}">
+                    <span class="admin-nav-icon" aria-hidden="true">💳</span>
+                    <span class="admin-nav-text">Transactions</span>
+                </a>
+
+                <a href="{{ path('admin_support') }}" class="admin-nav-link {{ currentAdminRoute == 'admin_support' ? 'active' : '' }}">
+                    <span class="admin-nav-icon" aria-hidden="true">💬</span>
+                    <span class="admin-nav-text">Support Desk</span>
+                </a>
+
+                <span class="admin-nav-label">Account</span>
+
+                <a href="{{ path('profile') }}" class="admin-nav-link">
+                    <span class="admin-nav-icon" aria-hidden="true">👤</span>
+                    <span class="admin-nav-text">My Profile</span>
+                </a>
+
+                <a href="{{ path('home') }}" class="admin-nav-link">
+                    <span class="admin-nav-icon" aria-hidden="true">🌐</span>
+                    <span class="admin-nav-text">View Site</span>
+                </a>
+
+                <a href="{{ path('logout') }}" class="admin-nav-link">
+                    <span class="admin-nav-icon" aria-hidden="true">↩</span>
+                    <span class="admin-nav-text">Sign Out</span>
+                </a>
+            </nav>
+
+            <div class="admin-sidebar-footer">
+                <span class="admin-preview-dot" aria-hidden="true"></span>
+                <span class="admin-sidebar-footer-text">UI preview — no data is saved</span>
+            </div>
+        </aside>
+
+        <div class="admin-overlay" id="admin-overlay" hidden></div>
+
+        <div class="admin-main">
+            <header class="admin-topbar">
+                <button type="button" class="admin-menu-btn" id="admin-menu-btn" aria-label="Open admin menu" aria-expanded="false" aria-controls="admin-sidebar">
+                    <span></span><span></span><span></span>
+                </button>
+
+                <div class="admin-topbar-heading">
+                    <h1>{% block admin_heading %}Admin{% endblock %}</h1>
+                    <p>{% block admin_subheading %}{% endblock %}</p>
+                </div>
+
+                <div class="admin-topbar-actions">
+                    <a href="{{ path('home') }}" class="admin-topbar-link">View Site</a>
+                    <a href="{{ path('profile') }}" class="admin-topbar-profile" title="My profile">
+                        <span class="admin-topbar-avatar">A</span>
+                        <span class="admin-topbar-name">admin</span>
+                    </a>
+                </div>
+            </header>
+
+            <main class="admin-content">
+                {% block admin_content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var shell = document.getElementById('admin-shell');
+            var menuButton = document.getElementById('admin-menu-btn');
+            var overlay = document.getElementById('admin-overlay');
+            var collapseButton = document.getElementById('admin-collapse-btn');
+
+            if (!shell || !menuButton) {
+                return;
+            }
+
+            function closeMobileNav() {
+                shell.classList.remove('admin-nav-open');
+                menuButton.setAttribute('aria-expanded', 'false');
+                if (overlay) {
+                    overlay.hidden = true;
+                }
+            }
+
+            menuButton.addEventListener('click', function () {
+                var willOpen = !shell.classList.contains('admin-nav-open');
+                shell.classList.toggle('admin-nav-open', willOpen);
+                menuButton.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+                if (overlay) {
+                    overlay.hidden = !willOpen;
+                }
+            });
+
+            if (overlay) {
+                overlay.addEventListener('click', closeMobileNav);
+            }
+
+            if (collapseButton) {
+                collapseButton.addEventListener('click', function () {
+                    var collapsed = shell.classList.toggle('admin-nav-collapsed');
+                    collapseButton.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+                    collapseButton.setAttribute('title', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+                    collapseButton.innerHTML = collapsed ? '&#10095;' : '&#10094;';
+                });
+            }
+
+            window.addEventListener('resize', function () {
+                if (window.innerWidth > 900) {
+                    closeMobileNav();
+                }
+            });
+        })();
+    </script>
+{% endblock %}

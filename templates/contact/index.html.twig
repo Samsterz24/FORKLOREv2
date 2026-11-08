@@ -1,0 +1,154 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Contact Support &amp; Helpdesk - ForkLore{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/contact.css') }}">
+{% endblock %}
+
+{% block content %}
+    <main class="support-page-wrap">
+        <div class="support-hero-banner">
+            <div>
+                <h1>💬 Contact &amp; Support Chat</h1>
+                <p>Need help with your account, submitting recipes, or have questions for our team? Open a ticket to chat directly with ForkLore staff.</p>
+            </div>
+            <div>
+                <a href="{{ path('contact', { new: 1 }) }}" class="btn-new-ticket">➕ Open New Ticket</a>
+            </div>
+        </div>
+
+        <div class="support-layout">
+            <aside class="support-sidebar" aria-label="Your support conversations">
+                <div class="support-sidebar-header">
+                    <h2>Your Conversations</h2>
+                    <span class="ticket-total">{{ tickets|length }}</span>
+                </div>
+
+                <div class="support-tickets-list">
+                    {% if tickets is empty %}
+                        <div class="empty-tickets-state">
+                            <p>You have no active support tickets.</p>
+                            <a href="{{ path('contact', { new: 1 }) }}">Create your first ticket &rarr;</a>
+                        </div>
+                    {% else %}
+                        {% for ticket in tickets %}
+                            {% set isSelected = not isNewView and ticket.id == selectedTicketId %}
+                            <a href="{{ path('contact', { ticket_id: ticket.id }) }}"
+                               class="user-ticket-item {{ isSelected ? 'active' : '' }}">
+                                <div class="ticket-row-top">
+                                    <span class="ticket-id-tag">#{{ ticket.id }}</span>
+                                    <span class="ticket-time-tag">{{ ticket.createdAt|date('M d') }}</span>
+                                </div>
+                                <div class="ticket-subject-title">{{ ticket.subject }}</div>
+                                <div class="ticket-row-bottom">
+                                    <span class="ticket-msg-snippet">
+                                        {{ ticket.lastMessage|length > 24 ? ticket.lastMessage|slice(0, 24) ~ '...' : ticket.lastMessage }}
+                                    </span>
+                                    <span class="status-pill status-{{ ticket.status }}">{{ ticket.status|replace({ '_': ' ' }) }}</span>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </aside>
+
+            <div class="support-main-content">
+                {% if isNewView %}
+                    <div class="new-ticket-form-wrap">
+                        <span class="badge">NEW INQUIRY</span>
+                        <h2>Start a Conversation with Support</h2>
+                        <p class="new-ticket-intro">Explain what you need assistance with. Our administrators receive and reply through this thread.</p>
+
+                        <form method="post" action="{{ path('contact') }}" class="new-ticket-form">
+                            <input type="hidden" name="action" value="create_ticket">
+
+                            <div class="support-field">
+                                <label for="subject">Subject / Topic</label>
+                                <input type="text" id="subject" name="subject" required placeholder="e.g., Recipe formatting issue or Foodie Stamp question">
+                            </div>
+
+                            <div class="support-field">
+                                <label for="message">Your Message</label>
+                                <textarea id="message" name="message" rows="6" required placeholder="Describe your question or issue in detail..."></textarea>
+                            </div>
+
+                            <div class="new-ticket-actions">
+                                <button type="submit" class="primary-btn">Send Message &rarr;</button>
+                                {% if tickets is not empty %}
+                                    <a href="{{ path('contact') }}" class="support-cancel-link">Cancel</a>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                {% elseif activeTicket %}
+                    <div class="chat-thread-header">
+                        <div>
+                            <h3>{{ activeTicket.subject }}</h3>
+                            <p>Ticket #{{ activeTicket.id }} &bull; Created {{ activeTicket.createdAt|date('M d, Y h:i A') }}</p>
+                        </div>
+                        <div>
+                            <span class="status-pill status-{{ activeTicket.status }}">
+                                Status: {{ activeTicket.status|replace({ '_': ' ' }) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="chat-messages-body" id="messages-container">
+                        {% if ticketMessages is empty %}
+                            <p class="empty-messages-notice">No messages in this conversation yet.</p>
+                        {% else %}
+                            {% for message in ticketMessages %}
+                                <div class="user-msg-bubble {{ message.isAdmin ? 'bubble-admin' : 'bubble-user' }}">
+                                    <div class="bubble-meta">
+                                        <span>
+                                            {% if message.isAdmin %}
+                                                🛡️ Admin Support ({{ message.sender }})
+                                            {% else %}
+                                                👤 You ({{ message.sender }})
+                                            {% endif %}
+                                        </span>
+                                        <span>{{ message.createdAt|date('M d, h:i A') }}</span>
+                                    </div>
+                                    <div class="bubble-text">{{ message.message|nl2br }}</div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="chat-reply-bar">
+                        {% if activeTicket.status == 'closed' %}
+                            <div class="ticket-closed-notice">
+                                <span>This ticket is marked as resolved/closed. Sending a reply will reopen it.</span>
+                            </div>
+                        {% endif %}
+
+                        <form method="post" action="{{ path('contact') }}" class="chat-reply-form">
+                            <input type="hidden" name="action" value="send_reply">
+                            <input type="hidden" name="ticket_id" value="{{ activeTicket.id }}">
+                            <label class="visually-hidden" for="reply-message">Write your reply</label>
+                            <textarea id="reply-message" name="message" class="chat-textarea" placeholder="Write your reply to admin support..." required></textarea>
+                            <button type="submit" class="btn-chat-send">Send &rarr;</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <div class="empty-thread-state">
+                        <div class="empty-thread-icon" aria-hidden="true">💬</div>
+                        <h3>Select a conversation</h3>
+                        <p>Choose a ticket from the left panel or start a new one.</p>
+                        <a href="{{ path('contact', { new: 1 }) }}" class="primary-btn">Open New Ticket</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <script>
+        (function () {
+            var container = document.getElementById('messages-container');
+            if (container) {
+                container.scrollTop = container.scrollHeight;
+            }
+        })();
+    </script>
+{% endblock %}

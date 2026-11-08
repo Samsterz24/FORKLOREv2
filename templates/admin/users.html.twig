@@ -1,0 +1,92 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Admin - User Management | ForkLore{% endblock %}
+{% block admin_heading %}User Management &amp; Access Control{% endblock %}
+{% block admin_subheading %}Role assignment and account status moderation.{% endblock %}
+
+{% block admin_content %}
+    {% if notice %}
+        <div class="admin-alert admin-alert-success" role="status">✓ {{ notice }}</div>
+    {% endif %}
+
+    <section class="admin-section-card">
+        <div class="admin-section-header">
+            <h2>👥 All Registered Users</h2>
+            <span class="admin-muted">{{ users|length }} accounts</span>
+        </div>
+
+        <div class="admin-table-responsive">
+            <table class="admin-table admin-users-table">
+                <thead>
+                    <tr>
+                        <th class="admin-col-id">ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th class="admin-col-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td><strong>#{{ user.id }}</strong></td>
+                            <td>
+                                {{ user.username }}
+                                {% if user.id == currentAdminId %}
+                                    <span class="admin-user-meta">(You)</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="admin-badge admin-badge-{{ user.role == 'admin' ? 'admin' : 'user' }}">
+                                    {{ user.role|upper }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="admin-badge admin-badge-{{ user.status == 'active' ? 'active' : 'banned' }}">
+                                    {{ user.status|capitalize }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="admin-actions-cell">
+                                    <form method="post" action="{{ path('admin_users') }}"
+                                          onsubmit="return confirm('Toggle status for {{ user.username|e('js') }}?');">
+                                        <input type="hidden" name="action" value="toggle_status">
+                                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                                        {% if user.status == 'active' %}
+                                            <button type="submit" class="admin-btn admin-btn-ban"
+                                                    {{ user.id == currentAdminId ? 'disabled title="Cannot ban yourself"' : '' }}>
+                                                Ban User
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" class="admin-btn admin-btn-unban">Unban User</button>
+                                        {% endif %}
+                                    </form>
+
+                                    <form method="post" action="{{ path('admin_users') }}" class="admin-role-form">
+                                        <input type="hidden" name="action" value="update_role">
+                                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                                        <label class="visually-hidden" for="role-{{ user.id }}">Role for {{ user.username }}</label>
+                                        <select name="role" id="role-{{ user.id }}" class="admin-role-select">
+                                            <option value="user" {{ user.role == 'user' ? 'selected' : '' }}>user</option>
+                                            <option value="admin" {{ user.role == 'admin' ? 'selected' : '' }}>admin</option>
+                                        </select>
+                                        <button type="submit" class="admin-btn admin-btn-save"
+                                                {{ user.id == currentAdminId ? 'disabled title="Cannot change your own role"' : '' }}>
+                                            Set Role
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="admin-empty-cell">No registered users found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}

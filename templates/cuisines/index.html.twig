@@ -1,0 +1,33 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Explore Cuisines - ForkLore{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/cuisines.css') }}">
+{% endblock %}
+
+{% block content %}
+    <main class="cuisines-page">
+        <div class="cuisines-heading">
+            <h1>Explore Cuisines</h1>
+            <p>Journey through culinary traditions, authentic flavors, and community family secrets from around the globe.</p>
+        </div>
+
+        <div class="cuisines-grid">
+            {% for cuisine in cuisines %}
+                <a href="{{ path('recipes_index', { cuisine: cuisine.slug }) }}" class="cuisine-card">
+                    <img src="{{ asset(cuisine.image) }}" alt="{{ cuisine.name }} Cuisine">
+                    <div class="cuisine-overlay">
+                        <h2>{{ cuisine.name }}</h2>
+                        {% if cuisine.description %}
+                            <p class="cuisine-desc">{{ cuisine.description }}</p>
+                        {% endif %}
+                        <span>{{ cuisine.recipeCount }} {{ cuisine.recipeCount == 1 ? 'recipe' : 'recipes' }}</span>
+                    </div>
+                </a>
+            {% else %}
+                <p>No cuisines available yet. Please check back later!</p>
+            {% endfor %}
+        </div>
+    </main>
+{% endblock %}

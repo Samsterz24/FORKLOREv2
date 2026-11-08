@@ -1,0 +1,104 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Community — ForkLore{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/community.css') }}">
+{% endblock %}
+
+{% block content %}
+    <main class="community-page">
+        <div class="community-header">
+            <div class="community-header-text">
+                <span class="badge">THE FORKLORE COMMUNITY</span>
+                <h1>Discussion Board</h1>
+                <p>Ask questions, share tips, and connect with fellow food lovers from around the world.</p>
+            </div>
+            <a href="#new-thread" class="primary-btn">+ New Thread</a>
+        </div>
+
+        <div class="new-thread-box" id="new-thread">
+            <h2>Start a New Thread</h2>
+            <form method="post" action="{{ path('community_index') }}">
+                <div class="thread-form-row">
+                    <div class="form-group">
+                        <label for="title">Thread Title</label>
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            placeholder="e.g. Best way to caramelize onions?"
+                            maxlength="200"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" name="category" required>
+                            {% for category in categories %}
+                                <option value="{{ category }}">{{ category }}</option>
+                            {% else %}
+                                <option value="" disabled selected>No categories available yet</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="content">Your Post</label>
+                    <textarea
+                        id="content"
+                        name="content"
+                        rows="5"
+                        placeholder="Share your question, tip, or story with the community…"
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="thread-form-actions">
+                    <button type="submit" class="thread-submit-btn">Post Thread &rarr;</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="feed-header">
+            <h2>All Discussions</h2>
+            <span class="thread-count-pill">{{ posts|length }} thread{{ posts|length != 1 ? 's' : '' }}</span>
+        </div>
+
+        {% if posts is not empty %}
+            <div class="thread-feed">
+                {% for post in posts %}
+                    <a href="{{ path('community_show', { id: post.id }) }}" class="thread-card">
+                        <div class="thread-card-top">
+                            <div class="thread-avatar">{{ post.initial }}</div>
+                            <span class="thread-author">{{ post.author }}</span>
+                            <span class="cat-badge {{ post.categoryClass }}">{{ post.category }}</span>
+                            <span class="thread-date">{{ post.createdAt|date('M j, Y') }}</span>
+                        </div>
+
+                        <h3 class="thread-title">{{ post.title }}</h3>
+                        <p class="thread-preview">
+                            {{ post.content|slice(0, 200) }}{% if post.content|length > 200 %}&hellip;{% endif %}
+                        </p>
+
+                        <div class="thread-card-footer">
+                            <span class="thread-reply-count">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                </svg>
+                                {{ post.replyCount }} {{ post.replyCount == 1 ? 'reply' : 'replies' }}
+                            </span>
+                            <span class="thread-read-link">Read thread &rarr;</span>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-feed">
+                <h3>No threads yet &mdash; be the first!</h3>
+                <p>Start a discussion above and kick off the conversation.</p>
+            </div>
+        {% endif %}
+    </main>
+{% endblock %}
