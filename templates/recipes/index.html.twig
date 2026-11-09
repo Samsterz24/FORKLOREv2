@@ -88,6 +88,8 @@
                 <span class="recipe-result-count">
                     {{ recipes|length }} {{ recipes|length == 1 ? 'recipe' : 'recipes' }}
                 </span>
+
+                <button type="button" class="primary-btn" id="open-create-recipe">Create Recipe</button>
             </div>
 
             <div class="recipe-grid">
@@ -118,5 +120,25 @@
                 {% endfor %}
             </div>
         </section>
+
+        <dialog id="create-recipe-modal">
+            <div class="modal-content">
+                <h2>Create Recipe</h2>
+                {{ form_start(form) }}
+                    {{ form_row(form.title) }}
+                    {{ form_row(form.category) }}
+                    {{ form_row(form.cuisine) }}
+                    {{ form_row(form.ingredients) }}
+                    <button type="submit" class="primary-btn">Save</button>
+                    <button type="button" class="clear-filter" id="close-create-recipe">Cancel</button>
+                {{ form_end(form) }}
+            </div>
+        </dialog>
+
+        <script>
+            const dlg = document.getElementById('create-recipe-modal');
+            document.getElementById('open-create-recipe').addEventListener('click', () => dlg.showModal());
+            document.getElementById('close-create-recipe').addEventListener('click', () => dlg.close());
+        </script>
     </main>
 {% endblock %}
