@@ -23,7 +23,28 @@
         {% if is_granted('ROLE_ADMIN') %}
             <a href="{{ path('admin_dashboard') }}" class="admin-nav-pill" title="Admin dashboard">⚡ Admin</a>
         {% endif %}
-        <a href="{{ path('login') }}" class="login-nav-btn">Login</a>
-        <a href="{{ path('register') }}" class="register-nav-btn">Register</a>
+        {% if app.user %}
+            <div class="user-menu">
+                <button type="button" class="user-menu-trigger">{{ app.user.userIdentifier }} ▾</button>
+                <div class="user-menu-dropdown" hidden>
+                    <a href="{{ path('profile') }}">View Profile</a>
+                    <a href="{{ path('logout') }}">Logout</a>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    const trigger = document.querySelector('.user-menu-trigger');
+                    const dropdown = document.querySelector('.user-menu-dropdown');
+                    if (!trigger || !dropdown) return;
+                    trigger.addEventListener('click', () => { dropdown.hidden = !dropdown.hidden; });
+                    document.addEventListener('click', (e) => {
+                        if (!trigger.contains(e.target) && !dropdown.contains(e.target)) dropdown.hidden = true;
+                    });
+                })();
+            </script>
+        {% else %}
+            <a href="{{ path('login') }}" class="login-nav-btn">Login</a>
+            <a href="{{ path('register') }}" class="register-nav-btn">Register</a>
+        {% endif %}
     </div>
 </header>

@@ -91,6 +91,7 @@
                             <span class="status-pill status-{{ activeTicket.status }}">
                                 Status: {{ activeTicket.status|replace({ '_': ' ' }) }}
                             </span>
+                            <span id="live-badge" class="status-pill">Live</span>
                         </div>
                     </div>
 
@@ -149,6 +150,15 @@
             if (container) {
                 container.scrollTop = container.scrollHeight;
             }
+            var liveBadge = document.getElementById('live-badge');
+            setInterval(function () {
+                if (container) {
+                    container.scrollTop = container.scrollHeight;
+                }
+                if (liveBadge) {
+                    liveBadge.textContent = 'Live \u2022 ' + new Date().toLocaleTimeString();
+                }
+            }, 5000);
         })();
     </script>
 {% endblock %}
