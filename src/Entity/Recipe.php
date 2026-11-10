@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'recipes')]
@@ -22,6 +23,8 @@ class Recipe
     private ?Cuisine $cuisine = null;
 
     #[ORM\Column(length: 150)]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 150)]
     private string $title;
 
     #[ORM\Column(length: 50)]
