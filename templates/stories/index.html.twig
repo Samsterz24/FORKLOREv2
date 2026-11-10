@@ -16,7 +16,7 @@
             </div>
 
             <div class="stories-actions">
-                <a href="{{ path('share_story') }}" class="primary-btn">+ Tell Your Story</a>
+                <button type="button" class="primary-btn" id="open-create-story">+ Tell Your Story</button>
             </div>
         </div>
 
@@ -79,5 +79,28 @@
                 </div>
             </div>
         {% endif %}
+
+        <dialog id="create-story-modal">
+            <div class="modal-content">
+                <h2>Tell Your Story</h2>
+                {{ form_start(form) }}
+                    {{ form_row(form.title) }}
+                    {{ form_row(form.location) }}
+                    {{ form_row(form.authorName) }}
+                    {{ form_row(form.quote) }}
+                    {{ form_row(form.cuisine) }}
+                    <button type="submit" class="primary-btn">Save</button>
+                    <button type="button" class="clear-filter" id="close-create-story">Cancel</button>
+                {{ form_end(form) }}
+            </div>
+        </dialog>
+
+        <script>
+            const storyDlg = document.getElementById('create-story-modal');
+            const openStory = document.getElementById('open-create-story');
+            if (openStory) openStory.addEventListener('click', () => storyDlg.showModal());
+            const closeStory = document.getElementById('close-create-story');
+            if (closeStory) closeStory.addEventListener('click', () => storyDlg.close());
+        </script>
     </main>
 {% endblock %}
