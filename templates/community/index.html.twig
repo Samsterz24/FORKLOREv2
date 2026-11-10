@@ -14,11 +14,12 @@
                 <h1>Discussion Board</h1>
                 <p>Ask questions, share tips, and connect with fellow food lovers from around the world.</p>
             </div>
-            <a href="#new-thread" class="primary-btn">+ New Thread</a>
+            <button type="button" class="primary-btn" id="open-create-post">+ New Thread</button>
         </div>
 
-        <div class="new-thread-box" id="new-thread">
-            <h2>Start a New Thread</h2>
+        <dialog id="create-post-modal">
+            <div class="modal-content">
+                <h2>Start a New Thread</h2>
             <form method="post" action="{{ path('community_index') }}">
                 <div class="thread-form-row">
                     <div class="form-group">
@@ -59,7 +60,14 @@
                     <button type="submit" class="thread-submit-btn">Post Thread &rarr;</button>
                 </div>
             </form>
-        </div>
+            </div>
+        </dialog>
+
+        <script>
+            const postDlg = document.getElementById('create-post-modal');
+            const openPost = document.getElementById('open-create-post');
+            if (openPost) openPost.addEventListener('click', () => postDlg.showModal());
+        </script>
 
         <div class="feed-header">
             <h2>All Discussions</h2>
