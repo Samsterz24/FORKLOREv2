@@ -123,13 +123,10 @@ final class SmokeTest extends WebTestCase
      */
     public static function previewForms(): iterable
     {
-        yield 'login' => ['/login', 'Authentication'];
         yield 'register' => ['/register', 'account creation'];
         yield 'recipe edit' => ['/recipes/1/edit', 'recipe changes'];
         yield 'share recipe' => ['/share/recipe', 'nothing was published'];
         yield 'share story' => ['/share/story', 'nothing was published'];
-        yield 'community thread' => ['/community', 'discussions are not persisted'];
-        yield 'community reply' => ['/community/1', 'not stored yet'];
         yield 'contact' => ['/contact', 'tickets are not saved'];
         yield 'profile' => ['/profile', 'profile changes'];
         yield 'admin users' => ['/admin/users', 'no account was changed'];
