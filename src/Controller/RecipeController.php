@@ -8,6 +8,7 @@ use App\Entity\Cuisine;
 use App\Entity\Recipe;
 use App\Entity\User;
 use App\Form\RecipeType;
+use App\Repository\RecipeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,7 +20,7 @@ final class RecipeController extends AbstractController
     private const ALLOWED_SORTS = ['relevance', 'recent', 'oldest', 'favorites'];
     private const ALLOWED_ALLERGIES = ['', 'peanut', 'tree_nut', 'milk', 'egg', 'fish', 'shellfish', 'soy', 'wheat'];
 
-    public function __construct(private EntityManagerInterface $em) {}
+    public function __construct(private EntityManagerInterface $em, private RecipeRepository $recipeRepository) {}
 
     #[Route('/recipes', name: 'recipes_index', methods: ['GET', 'POST'])]
     public function index(Request $request): Response
@@ -38,7 +39,7 @@ final class RecipeController extends AbstractController
         }
 
         $cuisines = $this->em->getRepository(Cuisine::class)->findAll();
-        $recipes = $this->em->getRepository(Recipe::class)->findAll();
+        $recipes = $this->recipeRepository->findAll();
         $categories = [];
 
         $recipe = new Recipe();
