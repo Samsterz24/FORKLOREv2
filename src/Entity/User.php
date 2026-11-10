@@ -6,7 +6,10 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'users')]
-class User
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -25,6 +28,9 @@ class User
     #[ORM\Column(nullable: true)]
     private ?int $age = null;
 
+    #[ORM\Column(length: 50)]
+    private string $role = 'ROLE_USER';
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -42,5 +48,11 @@ class User
     public function setPassword(string $password): self { $this->password = $password; return $this; }
     public function getAge(): ?int { return $this->age; }
     public function setAge(?int $age): self { $this->age = $age; return $this; }
+    public function getRole(): string { return $this->role; }
+    public function setRole(string $role): self { $this->role = $role; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+
+    public function getRoles(): array { return [$this->role]; }
+    public function getUserIdentifier(): string { return $this->username; }
+    public function eraseCredentials(): void {}
 }

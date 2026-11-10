@@ -20,8 +20,9 @@
     </nav>
 
     <div class="auth-btn-group">
-        {# UI preview: admin is reachable without authentication until the real login flow exists. #}
-        <a href="{{ path('admin_dashboard') }}" class="admin-nav-pill" title="Temporary UI-preview shortcut">⚡ Admin</a>
+        {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('admin_dashboard') }}" class="admin-nav-pill" title="Admin dashboard">⚡ Admin</a>
+        {% endif %}
         <a href="{{ path('login') }}" class="login-nav-btn">Login</a>
         <a href="{{ path('register') }}" class="register-nav-btn">Register</a>
     </div>
