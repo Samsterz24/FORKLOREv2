@@ -39,7 +39,7 @@
                             </td>
                             <td>{{ user.email }}</td>
                             <td>
-                                <span class="admin-badge admin-badge-{{ user.role == 'admin' ? 'admin' : 'user' }}">
+                                <span class="admin-badge admin-badge-{{ user.role == 'admin' ? 'admin' : (user.role == 'moderator' ? 'mod' : 'user') }}">
                                     {{ user.role|upper }}
                                 </span>
                             </td>
@@ -70,6 +70,7 @@
                                         <label class="visually-hidden" for="role-{{ user.id }}">Role for {{ user.username }}</label>
                                         <select name="role" id="role-{{ user.id }}" class="admin-role-select">
                                             <option value="user" {{ user.role == 'user' ? 'selected' : '' }}>user</option>
+                                            <option value="moderator" {{ user.role == 'moderator' ? 'selected' : '' }}>moderator</option>
                                             <option value="admin" {{ user.role == 'admin' ? 'selected' : '' }}>admin</option>
                                         </select>
                                         <button type="submit" class="admin-btn admin-btn-save"
