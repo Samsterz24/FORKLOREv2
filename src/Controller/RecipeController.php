@@ -40,7 +40,7 @@ final class RecipeController extends AbstractController
 
         $cuisines = $this->em->getRepository(Cuisine::class)->findAll();
         $recipes = $this->recipeRepository->findAll();
-        $categories = [];
+        $categories = array_values(array_unique(array_map(fn($r) => $r->getCategory(), $recipes)));
 
         $recipe = new Recipe();
         $form = $this->createForm(RecipeType::class, $recipe);
