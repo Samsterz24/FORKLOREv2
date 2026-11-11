@@ -38,12 +38,19 @@ final class ProfileController extends AbstractController
 
         $uploadedRecipes = $profile ? $this->em->getRepository(Recipe::class)->findBy(['user' => $profile]) : [];
         $submittedStories = $profile ? $this->em->getRepository(Story::class)->findBy(['user' => $profile]) : [];
+        $savedRecipes = [];
+        if ($profile) {
+            $favorites = $this->em->getRepository(\App\Entity\Favorite::class)->findBy(['user' => $profile]);
+            foreach ($favorites as $fav) {
+                $savedRecipes[] = $fav->getRecipe();
+            }
+        }
 
         return $this->render('profile/index.html.twig', [
             'profile' => $profile,
             'tab' => $tab,
             'uploadedRecipes' => $uploadedRecipes,
-            'savedRecipes' => [],
+            'savedRecipes' => $savedRecipes,
             'submittedStories' => $submittedStories,
             'notice' => $notice,
         ]);

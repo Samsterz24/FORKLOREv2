@@ -27,7 +27,7 @@
                 </div>
 
                 <p class="profile-join-date">
-                    Member since {{ profile.joined }}
+                    Member since {{ profile.joined|date('F Y') }}
                     {% if profile.hasFoodieStamp and profile.stampExpires %}
                         <span class="stamp-active"> • Foodie Stamp active until {{ profile.stampExpires }}</span>
                     {% endif %}
@@ -55,7 +55,9 @@
             </div>
 
             <div class="profile-actions-bar">
-                <a href="{{ path('admin_dashboard') }}" class="admin-nav-pill">⚡ Admin Dashboard &rarr;</a>
+                {% if profile.role == 'admin' %}
+                    <a href="{{ path('admin_dashboard') }}" class="admin-nav-pill">⚡ Admin Dashboard &rarr;</a>
+                {% endif %}
 
                 <button type="button" class="foodie-stamp-btn" disabled title="Subscriptions are not part of this UI preview">
                     🏅 Manage Foodie Stamp
@@ -115,13 +117,13 @@
                         <div class="profile-card-stack">
                             <a href="{{ path('recipes_show', { id: recipe.id }) }}" class="content-card">
                                 <div class="card-img-wrap">
-                                    <img src="{{ asset(recipe.image) }}" alt="{{ recipe.title }}">
+                                    <img src="{{ asset('images/' ~ recipe.imageFilename) }}" alt="{{ recipe.title }}">
                                 </div>
                                 <div class="card-body">
                                     <div class="card-meta">
                                         <span class="badge">{{ recipe.category }}</span>
                                         {% if recipe.cuisine %}
-                                            <span class="badge badge-cuisine">{{ recipe.cuisine }}</span>
+                                            <span class="badge badge-cuisine">{{ recipe.cuisine.name }}</span>
                                         {% endif %}
                                     </div>
                                     <h3 class="card-title">{{ recipe.title }}</h3>
@@ -152,17 +154,17 @@
                     {% for recipe in savedRecipes %}
                         <a href="{{ path('recipes_show', { id: recipe.id }) }}" class="content-card">
                             <div class="card-img-wrap">
-                                <img src="{{ asset(recipe.image) }}" alt="{{ recipe.title }}">
+                                <img src="{{ asset('images/' ~ recipe.imageFilename) }}" alt="{{ recipe.title }}">
                             </div>
                             <div class="card-body">
                                 <div class="card-meta">
                                     <span class="badge">{{ recipe.category }}</span>
                                     {% if recipe.cuisine %}
-                                        <span class="badge badge-cuisine">{{ recipe.cuisine }}</span>
+                                        <span class="badge badge-cuisine">{{ recipe.cuisine.name }}</span>
                                     {% endif %}
                                 </div>
                                 <h3 class="card-title">{{ recipe.title }}</h3>
-                                <p class="card-author">By {{ recipe.author }}</p>
+                                <p class="card-author">By {{ recipe.user.username }}</p>
                                 <div class="card-footer">
                                     <span>♥ {{ recipe.totalLikes }} favorites</span>
                                     <span>{{ recipe.createdAt|date('M d, Y') }}</span>
@@ -185,7 +187,7 @@
                     {% for story in submittedStories %}
                         <a href="{{ path('stories_show', { id: story.id }) }}" class="content-card">
                             <div class="card-img-wrap">
-                                <img src="{{ asset(story.image) }}" alt="{{ story.title }}">
+                                <img src="{{ asset('images/' ~ story.imageFilename) }}" alt="{{ story.title }}">
                             </div>
                             <div class="card-body">
                                 <div class="card-meta">
@@ -199,7 +201,7 @@
                                     <p class="card-snippet">"{{ story.quote|slice(0, 110) }}{% if story.quote|length > 110 %}...{% endif %}"</p>
                                 {% endif %}
                                 <div class="card-footer">
-                                    <span>Saved {{ story.saves }} times</span>
+                                    <span>Saved {{ story.savesCount }} times</span>
                                     <span>{{ story.createdAt|date('M d, Y') }}</span>
                                 </div>
                             </div>

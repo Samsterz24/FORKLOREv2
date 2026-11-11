@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
 use Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator;
@@ -35,7 +36,7 @@ final class AuthController extends AbstractController
     }
 
     #[Route('/register', name: 'register', methods: ['GET', 'POST'])]
-    public function register(Request $request, UserAuthenticatorInterface $authenticator, FormLoginAuthenticator $formAuthenticator): Response
+    public function register(Request $request, UserAuthenticatorInterface $authenticator, #[Autowire(service: 'security.authenticator.form_login.main')] FormLoginAuthenticator $formAuthenticator): Response
     {
         if ($this->getUser()) {
             return $this->redirectToRoute('home');

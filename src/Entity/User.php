@@ -74,6 +74,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setStampExpiresAt(?\DateTimeImmutable $v): self { $this->stampExpiresAt = $v; return $this; }
     public function isVerifiedChef(): bool { return $this->isVerifiedChef; }
     public function setIsVerifiedChef(bool $v): self { $this->isVerifiedChef = $v; return $this; }
+    public function getInitial(): string { return strtoupper(substr($this->username, 0, 1)); }
+    public function getJoined(): \DateTimeImmutable { return $this->createdAt; }
+    public function getStatus(): string { return 'active'; }
+    public function getStampExpires(): ?string { return $this->stampExpiresAt?->format('M j, Y'); }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
 
     public function getRoles(): array { return [$this->role]; }
