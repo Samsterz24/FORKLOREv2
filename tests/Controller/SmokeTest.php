@@ -74,6 +74,11 @@ final class SmokeTest extends WebTestCase
     public function testAdminPagesRender(string $path): void
     {
         $client = static::createClient();
+        $container = static::getContainer();
+        $user = $container->get(\App\Repository\UserRepository::class)->findOneBy(['username' => 'Samsterz24']);
+        if ($user) {
+            $client->loginUser($user);
+        }
         $client->request('GET', $path);
 
         $this->assertResponseIsSuccessful();
@@ -135,6 +140,13 @@ final class SmokeTest extends WebTestCase
     public function testPreviewFormsAcknowledgeWithoutSaving(string $path, string $expectedNotice): void
     {
         $client = static::createClient();
+        if (str_starts_with($path, '/admin')) {
+            $container = static::getContainer();
+            $user = $container->get(\App\Repository\UserRepository::class)->findOneBy(['username' => 'Samsterz24']);
+            if ($user) {
+                $client->loginUser($user);
+            }
+        }
         $client->request('POST', $path, ['_test' => '1']);
 
         $this->assertResponseIsSuccessful();

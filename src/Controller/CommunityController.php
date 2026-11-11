@@ -20,18 +20,23 @@ final class CommunityController extends AbstractController
     #[Route('/community', name: 'community_index', methods: ['GET', 'POST'])]
     public function index(Request $request): Response
     {
+        $search = trim((string) $request->query->get('search', ''));
+
         $post = new Post();
         $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $user = $this->em->getRepository(User::class)->findOneBy([]);
-            if (!$user) {
-                $user = new User();
-                $user->setUsername('demo');
-                $user->setEmail('demo@example.com');
-                $user->setPassword('demo');
-                $this->em->persist($user);
+            $user = $this->getUser();
+            if (!$user instanceof User) {
+                $user = $this->em->getRepository(User::class)->findOneBy([]);
+                if (!$user) {
+                    $user = new User();
+                    $user->setUsername('demo');
+                    $user->setEmail('demo@example.com');
+                    $user->setPassword('demo');
+                    $this->em->persist($user);
+                }
             }
             $post->setUser($user);
             $this->em->persist($post);
@@ -39,10 +44,20 @@ final class CommunityController extends AbstractController
             return $this->redirectToRoute('community_index');
         }
 
+        $posts = $this->em->getRepository(Post::class)->findAll();
+        if ($search !== '') {
+            $posts = array_values(array_filter($posts, fn($p) =>
+                stripos($p->getTitle(), $search) !== false ||
+                stripos($p->getContent(), $search) !== false ||
+                stripos($p->getUser()->getUsername(), $search) !== false
+            ));
+        }
+
         return $this->render('community/index.html.twig', [
-            'posts' => $this->em->getRepository(Post::class)->findAll(),
+            'posts' => $posts,
             'categories' => [],
             'notice' => null,
+            'search' => $search,
             'form' => $form->createView(),
         ]);
     }

@@ -14,6 +14,10 @@
                 <h1>Discussion Board</h1>
                 <p>Ask questions, share tips, and connect with fellow food lovers from around the world.</p>
             </div>
+            <form method="get" action="{{ path('community_index') }}" class="community-search">
+                <input type="search" name="search" value="{{ search|default('') }}" placeholder="Search threads or users...">
+                <button type="submit" class="primary-btn">Search</button>
+            </form>
             <button type="button" class="primary-btn" id="open-create-post">+ New Thread</button>
         </div>
 

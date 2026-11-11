@@ -59,9 +59,9 @@
                     <a href="{{ path('admin_dashboard') }}" class="admin-nav-pill">⚡ Admin Dashboard &rarr;</a>
                 {% endif %}
 
-                <button type="button" class="foodie-stamp-btn" disabled title="Subscriptions are not part of this UI preview">
+                <a href="{{ path('subscriptions_index') }}" class="foodie-stamp-btn">
                     🏅 Manage Foodie Stamp
-                </button>
+                </a>
 
                 <button type="button" class="btn-edit-bio" onclick="toggleBioForm(true)">✎ Edit Bio</button>
             </div>
@@ -84,9 +84,9 @@
                 {% if profile.hasFoodieStamp %}
                     <span class="ai-priority-access">✓ Priority Access Reserved</span>
                 {% else %}
-                    <button type="button" class="ai-unlock-btn" disabled title="Subscriptions are not part of this UI preview">
+                    <a href="{{ path('subscriptions_index') }}" class="ai-unlock-btn">
                         Unlock with Foodie Stamp ($2.99)
-                    </button>
+                    </a>
                 {% endif %}
             </div>
         </div>
