@@ -11,50 +11,33 @@
         <div class="share-intro">
             <span class="share-eyebrow">ADD TO THE COMMUNITY COOKBOOK</span>
             <h2>Share a New Recipe</h2>
-            <p>Write down the dish your family asks for by name. Clear measurements, a good photo, and the small details are what make a recipe worth keeping.</p>
+            <p>Write down the dish your family asks for by name. Your draft is saved in this session so you won't lose it if you refresh.</p>
         </div>
 
-        <form action="{{ path('share_recipe') }}" method="post" enctype="multipart/form-data" class="share-form">
+        {{ form_start(form, {'attr': {'class': 'share-form'}}) }}
             <div class="share-form-panel">
                 <div class="mb-3">
-                    <label for="title" class="form-label">Recipe Title:</label>
-                    <input type="text" id="title" name="title" class="form-control" placeholder="e.g. Your family's signature dish" required>
+                    {{ form_label(form.title, 'Recipe Title:', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.title, {'attr': {'class': 'form-control', 'placeholder': "e.g. Your family's signature dish"}}) }}
+                    {{ form_errors(form.title) }}
                 </div>
 
                 <div class="mb-3">
-                    <label for="cuisine_id" class="form-label">Cuisine / Origin:</label>
-                    <select id="cuisine_id" name="cuisine_id" class="form-select">
-                        <option value="">-- Select Cuisine (Optional) --</option>
-                        {% for cuisine in cuisines %}
-                            <option value="{{ cuisine.id }}">{{ cuisine.name }}</option>
-                        {% endfor %}
-                    </select>
+                    {{ form_label(form.cuisine, 'Cuisine / Origin:', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.cuisine, {'attr': {'class': 'form-select'}}) }}
+                    {{ form_errors(form.cuisine) }}
                 </div>
 
                 <div class="mb-3">
-                    <label for="category" class="form-label">Category:</label>
-                    <select id="category" name="category" class="form-select" required>
-                        {% for category in categories %}
-                            <option value="{{ category }}">{{ category }}</option>
-                        {% else %}
-                            <option value="" disabled selected>No categories available yet</option>
-                        {% endfor %}
-                    </select>
+                    {{ form_label(form.category, 'Category:', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.category, {'attr': {'class': 'form-control', 'placeholder': 'e.g. Dinner'}}) }}
+                    {{ form_errors(form.category) }}
                 </div>
 
                 <div class="mb-3">
-                    <label for="recipe_image" class="form-label">Recipe Image:</label>
-                    <input type="file" id="recipe_image" name="recipe_image" class="form-control" accept="image/*" required>
-                </div>
-
-                <div class="mb-3">
-                    <label for="ingredients" class="form-label">Ingredients (one per line):</label>
-                    <textarea id="ingredients" name="ingredients" class="form-control" rows="5" placeholder="2 cups Flour&#10;1 tsp Salt&#10;1 cup Milk" required></textarea>
-                </div>
-
-                <div class="mb-3">
-                    <label for="instructions" class="form-label">Instructions / Steps:</label>
-                    <textarea id="instructions" name="instructions" class="form-control" rows="8" placeholder="1. Mix dry ingredients...&#10;2. Preheat oven..." required></textarea>
+                    {{ form_label(form.ingredients, 'Ingredients (one per line):', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.ingredients, {'attr': {'class': 'form-control', 'rows': 5, 'placeholder': "2 cups Flour\n1 tsp Salt\n1 cup Milk"}}) }}
+                    {{ form_errors(form.ingredients) }}
                 </div>
 
                 <div class="mb-3 monetization-box">
@@ -83,10 +66,10 @@
                     <ul>
                         <li>Keep measurements clear and specific.</li>
                         <li>Add notes about preparation or the story behind the dish.</li>
-                        <li>High-resolution photos make your recipe stand out!</li>
+                        <li>Your draft is kept in this session if you accidentally refresh.</li>
                     </ul>
                 </div>
             </div>
-        </form>
+        {{ form_end(form) }}
     </main>
 {% endblock %}

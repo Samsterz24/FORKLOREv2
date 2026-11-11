@@ -6,8 +6,6 @@ namespace App\Controller;
 
 use App\Entity\Cuisine;
 use App\Entity\Recipe;
-use App\Entity\User;
-use App\Form\RecipeType;
 use App\Repository\RecipeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,7 +18,6 @@ final class RecipeController extends AbstractController
     private const ALLOWED_SORTS = ['relevance', 'recent', 'oldest', 'favorites'];
     private const ALLOWED_ALLERGIES = ['', 'peanut', 'tree_nut', 'milk', 'egg', 'fish', 'shellfish', 'soy', 'wheat'];
     private const DEFAULT_CATEGORIES = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Appetizer', 'General'];
-    private const DRAFT_SESSION_KEY = 'recipe_draft';
 
     public function __construct(private EntityManagerInterface $em, private RecipeRepository $recipeRepository) {}
 
@@ -58,68 +55,6 @@ final class RecipeController extends AbstractController
             'cuisine' => $cuisine,
             'allergy' => $allergy,
             'selectedCuisineName' => '',
-        ]);
-    }
-
-    #[Route('/recipes/new', name: 'recipes_new', methods: ['GET', 'POST'])]
-    public function new(Request $request): Response
-    {
-        $session = $request->getSession();
-        $recipe = new Recipe();
-
-        $draft = $session->get(self::DRAFT_SESSION_KEY, []);
-        if ($request->isMethod('GET') && is_array($draft)) {
-            if (!empty($draft['title'])) {
-                $recipe->setTitle((string) $draft['title']);
-            }
-            if (!empty($draft['category'])) {
-                $recipe->setCategory((string) $draft['category']);
-            }
-            if (!empty($draft['ingredients'])) {
-                $recipe->setIngredients((string) $draft['ingredients']);
-            }
-            if (!empty($draft['cuisine'])) {
-                $draftCuisine = $this->em->getRepository(Cuisine::class)->find((int) $draft['cuisine']);
-                if ($draftCuisine) {
-                    $recipe->setCuisine($draftCuisine);
-                }
-            }
-        }
-
-        $form = $this->createForm(RecipeType::class, $recipe);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted()) {
-            $posted = $request->request->all('recipe');
-            if (is_array($posted)) {
-                unset($posted['_token']);
-                $session->set(self::DRAFT_SESSION_KEY, $posted);
-            }
-
-            if ($form->isValid()) {
-                $user = $this->getUser();
-                if (!$user instanceof User) {
-                    $user = $this->em->getRepository(User::class)->findOneBy([]);
-                    if (!$user) {
-                        $user = new User();
-                        $user->setUsername('demo');
-                        $user->setEmail('demo@example.com');
-                        $user->setPassword('demo');
-                        $this->em->persist($user);
-                    }
-                }
-                $recipe->setUser($user);
-                $this->em->persist($recipe);
-                $this->em->flush();
-
-                $session->remove(self::DRAFT_SESSION_KEY);
-
-                return $this->redirectToRoute('recipes_index');
-            }
-        }
-
-        return $this->render('recipes/new.html.twig', [
-            'form' => $form->createView(),
         ]);
     }
 
