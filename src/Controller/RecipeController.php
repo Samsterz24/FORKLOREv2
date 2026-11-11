@@ -21,6 +21,15 @@ final class RecipeController extends AbstractController
 
     public function __construct(private EntityManagerInterface $em, private RecipeRepository $recipeRepository) {}
 
+    private const REFERENCE_CUISINES = [
+        ['id' => 1, 'name' => 'Filipino', 'slug' => 'filipino'],
+        ['id' => 2, 'name' => 'French', 'slug' => 'french'],
+        ['id' => 3, 'name' => 'Indian', 'slug' => 'indian'],
+        ['id' => 4, 'name' => 'Italian', 'slug' => 'italian'],
+        ['id' => 5, 'name' => 'Japanese', 'slug' => 'japanese'],
+        ['id' => 6, 'name' => 'Mexican', 'slug' => 'mexican'],
+    ];
+
     #[Route('/recipes', name: 'recipes_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
@@ -37,13 +46,65 @@ final class RecipeController extends AbstractController
             $allergy = '';
         }
 
-        $cuisines = $this->em->getRepository(Cuisine::class)->findAll();
+        $dbCuisines = $this->em->getRepository(Cuisine::class)->findAll();
+        $cuisines = self::REFERENCE_CUISINES;
+        foreach ($dbCuisines as $dbCuisine) {
+            $slug = strtolower($dbCuisine->getSlug());
+            $exists = false;
+            foreach ($cuisines as $c) {
+                if (strtolower($c['slug']) === $slug) { $exists = true; break; }
+            }
+            if (!$exists) {
+                $cuisines[] = ['id' => $dbCuisine->getId(), 'name' => $dbCuisine->getName(), 'slug' => $dbCuisine->getSlug()];
+            }
+        }
+
         $recipes = $this->recipeRepository->findAll();
         $categories = array_values(array_unique(array_merge(
             self::DEFAULT_CATEGORIES,
             array_filter(array_map(fn($r) => $r->getCategory(), $recipes))
         )));
         sort($categories);
+
+        $selectedCuisineName = '';
+        if ($cuisine !== '' && strtolower($cuisine) !== 'all') {
+            foreach ($cuisines as $c) {
+                if (strtolower($c['slug']) === strtolower($cuisine) || strtolower($c['name']) === strtolower($cuisine)) {
+                    $selectedCuisineName = $c['name'];
+                    $cuisine = $c['slug'];
+                    break;
+                }
+            }
+        }
+
+        if ($search !== '') {
+            $needle = mb_strtolower($search);
+            $recipes = array_values(array_filter($recipes, function ($r) use ($needle) {
+                $hay = mb_strtolower(($r->getTitle() ?? '') . ' ' . ($r->getCategory() ?? '') . ' ' . ($r->getIngredients() ?? '') . ' ' . ($r->getUser()?->getUsername() ?? ''));
+                $cuisineName = $r->getCuisine()?->getName() ?? '';
+                return str_contains($hay, $needle) || str_contains(mb_strtolower($cuisineName), $needle);
+            }));
+        }
+        if ($category !== '' && strtolower($category) !== 'all') {
+            $recipes = array_values(array_filter($recipes, fn($r) => strcasecmp((string) $r->getCategory(), $category) === 0));
+        }
+        if ($cuisine !== '' && strtolower($cuisine) !== 'all') {
+            $recipes = array_values(array_filter($recipes, function ($r) use ($cuisine, $selectedCuisineName) {
+                $rc = $r->getCuisine();
+                if (!$rc) { return false; }
+                return strcasecmp($rc->getSlug(), $cuisine) === 0
+                    || strcasecmp($rc->getName(), $cuisine) === 0
+                    || ($selectedCuisineName !== '' && strcasecmp($rc->getName(), $selectedCuisineName) === 0);
+            }));
+        }
+
+        if ($sort === 'oldest') {
+            usort($recipes, fn($a, $b) => $a->getCreatedAt() <=> $b->getCreatedAt());
+        } elseif ($sort === 'favorites') {
+            usort($recipes, fn($a, $b) => $b->getTotalLikes() <=> $a->getTotalLikes());
+        } else { // recent/relevance default
+            usort($recipes, fn($a, $b) => $b->getCreatedAt() <=> $a->getCreatedAt());
+        }
 
         return $this->render('recipes/index.html.twig', [
             'recipes' => $recipes,
@@ -54,7 +115,7 @@ final class RecipeController extends AbstractController
             'category' => $category,
             'cuisine' => $cuisine,
             'allergy' => $allergy,
-            'selectedCuisineName' => '',
+            'selectedCuisineName' => $selectedCuisineName,
         ]);
     }
 
