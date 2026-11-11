@@ -24,7 +24,7 @@
             <p style="font-size:16px;color:#d6c6bb;margin:0;max-width:600px;line-height:1.5;">Support culinary creators and sport the golden 🏅 Lore Foodie badge.</p>
             <div style="margin-top:20px;">
                 {% if user.hasFoodieStamp %}
-                    <span style="background:rgba(16,185,129,0.2);border:1px solid #10b981;color:#34d399;font-size:13px;font-weight:700;padding:6px 16px;border-radius:20px;">✓ Active (until {{ user.stampExpiresAt|date('M d, Y') }})</span>
+                    <span style="background:rgba(16,185,129,0.2);border:1px solid #10b981;color:#34d399;font-size:13px;font-weight:700;padding:6px 16px;border-radius:20px;">✓ Active{% if user.stampExpiresAt %} (until {{ user.stampExpiresAt|date('M d, Y') }}){% endif %}</span>
                 {% else %}
                     <span style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fde68a;font-size:13px;font-weight:600;padding:6px 16px;border-radius:20px;">Standard Account</span>
                 {% endif %}
@@ -44,44 +44,44 @@
             <div style="background:#fff;border:1px solid #fae8d7;border-radius:16px;padding:30px;box-shadow:0 6px 24px rgba(211,84,27,0.08);">
                 <h3 style="font-size:20px;font-weight:800;color:#17120d;margin:0 0 20px 0;">Payment Details</h3>
                 <form method="POST" action="{{ path('subscriptions_index') }}" id="subscription-form">
-                    <input type="hidden" name="submit_subscription" value="1">
+                    <input type="hidden" name="_token" value="{{ csrf_token('subscribe') }}">
                     <div style="margin-bottom:16px;">
-                        <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;">Plan</label>
-                        <select name="plan_type" style="width:100%;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
+                        <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;" for="plan_type">Plan</label>
+                        <select id="plan_type" name="plan_type" style="width:100%;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
                             <option value="monthly" {{ planType == 'monthly' ? 'selected' : '' }}>Monthly $2.99</option>
                             <option value="annual" {{ planType == 'annual' ? 'selected' : '' }}>Annual $29.99</option>
                         </select>
                     </div>
                     <div style="margin-bottom:16px;">
-                        <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;">Payment Method</label>
-                        <select name="payment_method" style="width:100%;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
+                        <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;" for="payment_method">Payment Method</label>
+                        <select id="payment_method" name="payment_method" style="width:100%;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
                             <option value="Mock Card">Mock Card</option>
                             <option value="Mock GCash">Mock GCash</option>
                         </select>
                     </div>
                     <div style="margin-bottom:16px;">
-                        <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;">Cardholder Name</label>
-                        <input type="text" name="card_name" value="{{ user.username }}" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
+                        <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;" for="card_name">Cardholder Name</label>
+                        <input type="text" id="card_name" name="card_name" value="{{ user.username }}" required style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
                     </div>
                     <div style="margin-bottom:16px;">
-                        <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;">Card Number</label>
-                        <input type="text" name="card_number" value="4242 4242 4242 4242" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
+                        <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;" for="card_number">Card Number</label>
+                        <input type="text" id="card_number" name="card_number" value="4242 4242 4242 4242" required style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
                     </div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
                         <div>
-                            <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;">Expiry (MM/YY)</label>
-                            <input type="text" name="card_expiry" value="12/28" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
+                            <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;" for="card_expiry">Expiry (MM/YY)</label>
+                            <input type="text" id="card_expiry" name="card_expiry" value="12/28" required style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
                         </div>
                         <div>
-                            <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;">CVV</label>
-                            <input type="password" name="card_cvv" value="789" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
+                            <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;" for="card_cvv">CVV</label>
+                            <input type="password" id="card_cvv" name="card_cvv" value="789" required style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
                         </div>
                     </div>
                     <div style="margin-bottom:22px;">
-                        <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;">Billing Zip</label>
-                        <input type="text" name="billing_zip" value="90210" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
+                        <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;" for="billing_zip">Billing Zip</label>
+                        <input type="text" id="billing_zip" name="billing_zip" value="90210" required style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
                     </div>
-                    <button type="submit" class="primary-btn" style="width:100%;padding:15px;font-size:16px;font-weight:800;border-radius:30px;">Authorize & Subscribe</button>
+                    <button type="submit" class="primary-btn" style="width:100%;padding:15px;font-size:16px;font-weight:800;border-radius:30px;cursor:pointer;">Authorize &amp; Subscribe</button>
                 </form>
             </div>
         </div>
