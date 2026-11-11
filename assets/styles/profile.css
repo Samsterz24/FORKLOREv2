@@ -173,7 +173,7 @@
     box-shadow: 0 4px 10px rgba(255, 174, 25, 0.3);
     font-size: 13px;
     font-weight: 700;
-    cursor: not-allowed;
+    cursor: pointer;
 }
 
 .profile-stats-strip {
@@ -281,7 +281,7 @@
     font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
-    cursor: not-allowed;
+    cursor: pointer;
 }
 
 /* Tabs */
