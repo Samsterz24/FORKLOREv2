@@ -26,6 +26,7 @@
             <div class="modal-content">
                 <h2>Start a New Thread</h2>
             <form method="post" action="{{ path('community_index') }}">
+                {{ form_widget(form._token) }}
                 <div class="thread-form-row">
                     <div class="form-group">
                         <label for="title">Thread Title</label>
@@ -87,9 +88,10 @@
                 {% for post in posts %}
                     <a href="{{ path('community_show', { id: post.id }) }}" class="thread-card">
                         <div class="thread-card-top">
-                            <div class="thread-avatar">{{ post.initial }}</div>
-                            <span class="thread-author">{{ post.author }}</span>
-                            <span class="cat-badge {{ post.categoryClass }}">{{ post.category }}</span>
+                            {% set author = post.user ? post.user.username : 'Unknown' %}
+                            <div class="thread-avatar">{{ author|slice(0, 1)|upper }}</div>
+                            <span class="thread-author">{{ author }}</span>
+                            <span class="cat-badge">{{ post.category }}</span>
                             <span class="thread-date">{{ post.createdAt|date('M j, Y') }}</span>
                         </div>
 
@@ -103,7 +105,7 @@
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                                 </svg>
-                                {{ post.replyCount }} {{ post.replyCount == 1 ? 'reply' : 'replies' }}
+                                0 replies
                             </span>
                             <span class="thread-read-link">Read thread &rarr;</span>
                         </div>

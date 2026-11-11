@@ -18,12 +18,13 @@
 
         <div class="post-hero">
             <div class="post-hero-meta">
-                <div class="post-hero-avatar">{{ post.initial }}</div>
+                {% set author = post.user ? post.user.username : 'Unknown' %}
+                <div class="post-hero-avatar">{{ author|slice(0, 1)|upper }}</div>
                 <div class="post-hero-byline">
-                    <strong>{{ post.author }}</strong>
+                    <strong>{{ author }}</strong>
                     <span>{{ post.createdAt|date('F j, Y \\a\\t g:i A') }}</span>
                 </div>
-                <span class="cat-badge {{ post.categoryClass }} post-hero-category">{{ post.category }}</span>
+                <span class="cat-badge post-hero-category">{{ post.category }}</span>
             </div>
 
             <h1>{{ post.title }}</h1>
@@ -36,27 +37,11 @@
         <section class="replies-section" id="replies">
             <h2 class="replies-section-header">
                 Replies
-                <span class="reply-total">{{ post.replies|length }}</span>
+                <span class="reply-total">0</span>
             </h2>
-
-            {% if post.replies is not empty %}
-                <div class="reply-list">
-                    {% for reply in post.replies %}
-                        <div class="reply-card">
-                            <div class="reply-card-top">
-                                <div class="reply-avatar">{{ reply.author|slice(0, 1)|upper }}</div>
-                                <span class="reply-author">{{ reply.author }}</span>
-                                <span class="reply-date">{{ reply.createdAt|date('M j, Y \\a\\t g:i A') }}</span>
-                            </div>
-                            <p class="reply-text">{{ reply.comment }}</p>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="no-replies">
-                    No replies yet &mdash; be the first to join the conversation!
-                </div>
-            {% endif %}
+            <div class="no-replies">
+                No replies yet &mdash; be the first to join the conversation!
+            </div>
         </section>
 
         <div class="reply-form-box">

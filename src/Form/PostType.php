@@ -12,6 +12,11 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PostType extends AbstractType
 {
+    public function getBlockPrefix(): string
+    {
+        return '';
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
