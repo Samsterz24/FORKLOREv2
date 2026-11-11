@@ -29,22 +29,19 @@
         {% if app.user %}
             <div class="user-menu">
                 <button type="button" class="user-menu-trigger">{{ app.user.userIdentifier }} ▾</button>
-                <div class="user-menu-dropdown" hidden>
+                <div class="user-menu-dropdown">
                     <a href="{{ path('profile') }}">View Profile</a>
                     <a href="{{ path('logout') }}">Logout</a>
                 </div>
             </div>
-            <script>
-                (function () {
-                    const trigger = document.querySelector('.user-menu-trigger');
-                    const dropdown = document.querySelector('.user-menu-dropdown');
-                    if (!trigger || !dropdown) return;
-                    trigger.addEventListener('click', () => { dropdown.hidden = !dropdown.hidden; });
-                    document.addEventListener('click', (e) => {
-                        if (!trigger.contains(e.target) && !dropdown.contains(e.target)) dropdown.hidden = true;
-                    });
-                })();
-            </script>
+            <style>
+                .user-menu { position: relative; display: inline-block; }
+                .user-menu-trigger { background: transparent; border: 1px solid #d3541b; color: #d3541b; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: 600; }
+                .user-menu-dropdown { position: absolute; right: 0; top: 100%; background: #fff; border: 1px solid #fae8d7; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); min-width: 140px; display: none; flex-direction: column; z-index: 100; }
+                .user-menu:hover .user-menu-dropdown, .user-menu:focus-within .user-menu-dropdown { display: flex; }
+                .user-menu-dropdown a { padding: 10px 14px; text-decoration: none; color: #17120d; font-size: 14px; }
+                .user-menu-dropdown a:hover { background: #fff8f4; color: #d3541b; }
+            </style>
         {% else %}
             <a href="{{ path('login') }}" class="login-nav-btn">Login</a>
             <a href="{{ path('register') }}" class="register-nav-btn">Register</a>
