@@ -1,0 +1,53 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Create Recipe - ForkLore{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/recipes.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="share-page recipe-create-page">
+    <section class="share-hero">
+        <span class="badge">NEW RECIPE</span>
+        <h1>Create a Recipe</h1>
+        <p>Share your recipe with the community. Your draft is saved in this session so you won't lose it if you refresh.</p>
+    </section>
+
+    <div class="share-form-wrapper">
+        {{ form_start(form, {'attr': {'class': 'share-form'}}) }}
+            <div class="share-form-panel">
+                <div class="form-group">
+                    {{ form_label(form.title, 'Recipe Title') }}
+                    {{ form_widget(form.title, {'attr': {'class': 'form-control', 'placeholder': 'e.g. Chicken Adobo'}}) }}
+                    {{ form_errors(form.title) }}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form_label(form.category, 'Category') }}
+                        {{ form_widget(form.category, {'attr': {'class': 'form-control', 'placeholder': 'e.g. Dinner'}}) }}
+                        {{ form_errors(form.category) }}
+                    </div>
+                    <div class="form-group">
+                        {{ form_label(form.cuisine, 'Cuisine') }}
+                        {{ form_widget(form.cuisine, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.cuisine) }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.ingredients, 'Ingredients') }}
+                    {{ form_widget(form.ingredients, {'attr': {'class': 'form-control', 'rows': 8, 'placeholder': 'List ingredients, one per line...'}}) }}
+                    {{ form_errors(form.ingredients) }}
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="primary-btn">Save Recipe</button>
+                    <a href="{{ path('recipes_index') }}" class="clear-filter">Cancel</a>
+                </div>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</main>
+{% endblock %}

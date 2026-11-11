@@ -10,15 +10,15 @@
     {% if recipe %}
     <main class="recipe-detail">
         <div class="recipe-detail-image">
-            <img src="{{ asset(recipe.image) }}" alt="{{ recipe.title }}">
+            <img src="{{ asset('uploads/recipes/' ~ (recipe.imageFilename|default('default.jpg'))) }}" alt="{{ recipe.title }}">
         </div>
 
         <div class="recipe-detail-content">
             <div class="recipe-detail-tags">
                 <span class="recipe-category">{{ recipe.category }}</span>
                 {% if recipe.cuisine %}
-                    <a href="{{ path('recipes_index', { cuisine: recipe.cuisineSlug }) }}" class="badge recipe-cuisine-link">
-                        {{ recipe.cuisine }} Cuisine
+                    <a href="{{ path('recipes_index', { cuisine: recipe.cuisine.slug }) }}" class="badge recipe-cuisine-link">
+                        {{ recipe.cuisine.name }} Cuisine
                     </a>
                 {% endif %}
             </div>
@@ -26,7 +26,7 @@
             <h1>{{ recipe.title }}</h1>
 
             <p class="recipe-author recipe-author--detail">
-                <span>by <strong>{{ recipe.author }}</strong></span>
+                <span>by <strong>{{ recipe.user ? recipe.user.username : 'Unknown' }}</strong></span>
             </p>
 
             <div class="recipe-owner-actions">
@@ -47,12 +47,8 @@
 
             <section>
                 <h2>Ingredients</h2>
-                {% if recipe.ingredients is not empty %}
-                    <ul>
-                        {% for ingredient in recipe.ingredients %}
-                            <li>{{ ingredient }}</li>
-                        {% endfor %}
-                    </ul>
+                {% if recipe.ingredients %}
+                    <p>{{ recipe.ingredients|nl2br }}</p>
                 {% else %}
                     <p>No ingredients available.</p>
                 {% endif %}
@@ -60,11 +56,7 @@
 
             <section>
                 <h2>Instructions</h2>
-                {% if recipe.instructions %}
-                    <p>{{ recipe.instructions|nl2br }}</p>
-                {% else %}
-                    <p>No instructions available.</p>
-                {% endif %}
+                <p>No instructions available.</p>
             </section>
         </div>
     </main>

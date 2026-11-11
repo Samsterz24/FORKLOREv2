@@ -36,7 +36,7 @@
                     </select>
 
                     <label class="visually-hidden" for="recipe-category">Category</label>
-                    <select name="category" id="recipe-category" class="recipe-filter" {{ categories is empty ? 'disabled' : '' }}>
+                    <select name="category" id="recipe-category" class="recipe-filter">
                         <option value="all" {{ category == 'all' ? 'selected' : '' }}>All Categories</option>
                         {% for categoryOption in categories %}
                             <option value="{{ categoryOption }}" {{ category == categoryOption ? 'selected' : '' }}>{{ categoryOption }}</option>
@@ -44,7 +44,7 @@
                     </select>
 
                     <label class="visually-hidden" for="recipe-cuisine">Cuisine</label>
-                    <select name="cuisine" id="recipe-cuisine" class="recipe-filter" {{ cuisines is empty ? 'disabled' : '' }}>
+                    <select name="cuisine" id="recipe-cuisine" class="recipe-filter">
                         <option value="all" {{ cuisine == 'all' or cuisine == '' ? 'selected' : '' }}>All Cuisines</option>
                         {% for cuisineOption in cuisines %}
                             <option value="{{ cuisineOption.slug }}"
@@ -89,26 +89,26 @@
                     {{ recipes|length }} {{ recipes|length == 1 ? 'recipe' : 'recipes' }}
                 </span>
 
-                <button type="button" class="primary-btn" id="open-create-recipe">Create Recipe</button>
+                <a href="{{ path('recipes_new') }}" class="primary-btn">Create Recipe</a>
             </div>
 
             <div class="recipe-grid">
                 {% for recipe in recipes %}
                     <a href="{{ path('recipes_show', { id: recipe.id }) }}" class="recipe-card">
                         <div class="recipe-image-wrapper">
-                            <img src="{{ asset(recipe.image) }}" alt="{{ recipe.title }}" class="recipe-image">
+                            <img src="{{ asset('uploads/recipes/' ~ (recipe.imageFilename|default('default.jpg'))) }}" alt="{{ recipe.title }}" class="recipe-image">
                         </div>
 
                         <div class="recipe-tags-row">
                             <span class="recipe-category">{{ recipe.category }}</span>
                             {% if recipe.cuisine %}
-                                <span class="recipe-cuisine-badge">{{ recipe.cuisine }}</span>
+                                <span class="recipe-cuisine-badge">{{ recipe.cuisine.name }}</span>
                             {% endif %}
                         </div>
 
                         <h3 class="recipe-title">{{ recipe.title }}</h3>
 
-                        <p class="recipe-author">by {{ recipe.author }}</p>
+                        <p class="recipe-author">by {{ recipe.user ? recipe.user.username : 'Unknown' }}</p>
 
                         <p class="recipe-likes">♥ {{ recipe.totalLikes }} favorites</p>
                     </a>
@@ -121,24 +121,6 @@
             </div>
         </section>
 
-        <dialog id="create-recipe-modal">
-            <div class="modal-content">
-                <h2>Create Recipe</h2>
-                {{ form_start(form) }}
-                    {{ form_row(form.title) }}
-                    {{ form_row(form.category) }}
-                    {{ form_row(form.cuisine) }}
-                    {{ form_row(form.ingredients) }}
-                    <button type="submit" class="primary-btn">Save</button>
-                    <button type="button" class="clear-filter" id="close-create-recipe">Cancel</button>
-                {{ form_end(form) }}
-            </div>
-        </dialog>
-
-        <script>
-            const dlg = document.getElementById('create-recipe-modal');
-            document.getElementById('open-create-recipe').addEventListener('click', () => dlg.showModal());
-            document.getElementById('close-create-recipe').addEventListener('click', () => dlg.close());
-        </script>
+        <!-- Create recipe moved to dedicated page -->
     </main>
 {% endblock %}
