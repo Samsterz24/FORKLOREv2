@@ -21,7 +21,8 @@
             <button type="button" class="primary-btn" id="open-create-post">+ New Thread</button>
         </div>
 
-        <dialog id="create-post-modal">
+        <dialog id="create-post-modal" style="border:none;border-radius:16px;padding:24px;max-width:520px;width:90%;margin:auto;inset:0;box-shadow:0 10px 40px rgba(0,0,0,0.2);">
+            <button type="button" class="modal-close" onclick="this.closest('dialog').close()" style="position:absolute;top:12px;right:12px;border:none;background:transparent;font-size:20px;cursor:pointer;">&times;</button>
             <div class="modal-content">
                 <h2>Start a New Thread</h2>
             <form method="post" action="{{ path('community_index') }}">
@@ -71,6 +72,9 @@
             const postDlg = document.getElementById('create-post-modal');
             const openPost = document.getElementById('open-create-post');
             if (openPost) openPost.addEventListener('click', () => postDlg.showModal());
+            postDlg.addEventListener('click', (e) => {
+                if (e.target === postDlg) postDlg.close();
+            });
         </script>
 
         <div class="feed-header">

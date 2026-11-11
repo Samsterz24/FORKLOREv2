@@ -53,9 +53,11 @@ final class CommunityController extends AbstractController
             ));
         }
 
+        $categories = ['General', 'Recipe Help', 'Tips & Tricks', 'Equipment'];
+
         return $this->render('community/index.html.twig', [
             'posts' => $posts,
-            'categories' => [],
+            'categories' => $categories,
             'notice' => null,
             'search' => $search,
             'form' => $form->createView(),
