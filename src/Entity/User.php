@@ -30,6 +30,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 50)]
     private string $role = 'ROLE_USER';
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $bio = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $avatar = null;
+
+    #[ORM\Column]
+    private bool $hasFoodieStamp = false;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $stampExpiresAt = null;
+
+    #[ORM\Column]
+    private bool $isVerifiedChef = false;
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -49,6 +64,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setAge(?int $age): self { $this->age = $age; return $this; }
     public function getRole(): string { return $this->role; }
     public function setRole(string $role): self { $this->role = $role; return $this; }
+    public function getBio(): ?string { return $this->bio; }
+    public function setBio(?string $bio): self { $this->bio = $bio; return $this; }
+    public function getAvatar(): ?string { return $this->avatar; }
+    public function setAvatar(?string $avatar): self { $this->avatar = $avatar; return $this; }
+    public function hasFoodieStamp(): bool { return $this->hasFoodieStamp; }
+    public function setHasFoodieStamp(bool $v): self { $this->hasFoodieStamp = $v; return $this; }
+    public function getStampExpiresAt(): ?\DateTimeImmutable { return $this->stampExpiresAt; }
+    public function setStampExpiresAt(?\DateTimeImmutable $v): self { $this->stampExpiresAt = $v; return $this; }
+    public function isVerifiedChef(): bool { return $this->isVerifiedChef; }
+    public function setIsVerifiedChef(bool $v): self { $this->isVerifiedChef = $v; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
 
     public function getRoles(): array { return [$this->role]; }
