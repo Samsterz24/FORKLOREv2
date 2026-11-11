@@ -11,7 +11,7 @@
             <div class="admin-stat-meta">
                 <p>Total Revenue</p>
                 <h3>{{ stats.revenue is not null ? '$' ~ stats.revenue|number_format(2, '.', ',') : '—' }}</h3>
-                <span class="admin-stat-pending">Database pending</span>
+                {% if stats.revenue is null %}<span class="admin-stat-pending">Database pending</span>{% endif %}
             </div>
         </div>
 
@@ -20,7 +20,7 @@
             <div class="admin-stat-meta">
                 <p>Completed Payments</p>
                 <h3>{{ stats.completed is not null ? stats.completed|number_format : '—' }}</h3>
-                <span class="admin-stat-pending">Database pending</span>
+                {% if stats.completed is null %}<span class="admin-stat-pending">Database pending</span>{% endif %}
             </div>
         </div>
 
@@ -29,7 +29,7 @@
             <div class="admin-stat-meta">
                 <p>Active Foodie Stamps</p>
                 <h3>{{ stats.activeStamps is not null ? stats.activeStamps|number_format : '—' }}</h3>
-                <span class="admin-stat-pending">Database pending</span>
+                {% if stats.activeStamps is null %}<span class="admin-stat-pending">Database pending</span>{% endif %}
             </div>
         </div>
 
@@ -38,7 +38,7 @@
             <div class="admin-stat-meta">
                 <p>Top Payment Method</p>
                 <h3 class="admin-stat-small">{{ stats.topMethod ?? '—' }}</h3>
-                <span class="admin-stat-pending">Database pending</span>
+                {% if stats.topMethod is null %}<span class="admin-stat-pending">Database pending</span>{% endif %}
             </div>
         </div>
     </section>
