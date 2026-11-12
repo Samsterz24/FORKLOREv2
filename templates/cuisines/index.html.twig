@@ -16,7 +16,7 @@
         <div class="cuisines-grid">
             {% for cuisine in cuisines %}
                 <a href="{{ path('recipes_index', { cuisine: cuisine.slug }) }}" class="cuisine-card">
-                    <img src="{{ asset(cuisine.image) }}" alt="{{ cuisine.name }} Cuisine">
+                    <img src="{{ asset(cuisine.image|default('images/placeholder.jpg')) }}" alt="{{ cuisine.name }} Cuisine">
                     <div class="cuisine-overlay">
                         <h2>{{ cuisine.name }}</h2>
                         {% if cuisine.description %}

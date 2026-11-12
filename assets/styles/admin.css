@@ -747,6 +747,11 @@ body {
     background: #d4edda;
     border: 1px solid #c3e6cb;
 }
+.admin-alert-error {
+    color: #721c24;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
 
 .admin-leaderboard-tabs {
     display: flex;

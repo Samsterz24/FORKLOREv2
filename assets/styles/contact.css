@@ -500,3 +500,9 @@
         width: 100%;
     }
 }
+
+/* inline alerts */
+.support-inline-alert { margin: 0 0 14px; padding: 10px 14px; border-radius: 10px; font-size: 14px; }
+.support-inline-alert--error { background: #fff5f5; border: 1px solid #f1b4b4; color: #8b2020; }
+.support-inline-alert--success { background: #f2fbf4; border: 1px solid #bfe3c7; color: #1f6b3a; }
+

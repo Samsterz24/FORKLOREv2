@@ -14,7 +14,7 @@
             <p>Write down the dish your family asks for by name. Your draft is saved in this session so you won't lose it if you refresh.</p>
         </div>
 
-        {{ form_start(form, {'attr': {'class': 'share-form'}}) }}
+        {{ form_start(form, {'attr': {'class': 'share-form', 'enctype': 'multipart/form-data'}}) }}
             <div class="share-form-panel">
                 <div class="mb-3">
                     {{ form_label(form.title, 'Recipe Title:', {'label_attr': {'class': 'form-label'}}) }}
@@ -30,8 +30,15 @@
 
                 <div class="mb-3">
                     {{ form_label(form.category, 'Category:', {'label_attr': {'class': 'form-label'}}) }}
-                    {{ form_widget(form.category, {'attr': {'class': 'form-control', 'placeholder': 'e.g. Dinner'}}) }}
+                    {{ form_widget(form.category, {'attr': {'class': 'form-select'}}) }}
                     {{ form_errors(form.category) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.recipe_image, 'Recipe Image:', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.recipe_image, {'attr': {'class': 'form-control', 'accept': 'image/jpeg,image/png,image/webp'}}) }}
+                    {{ form_errors(form.recipe_image) }}
+                    <small class="form-hint">Upload a JPG, PNG, or WebP image (max 5MB). If you refresh, you may need to reselect the image.</small>
                 </div>
 
                 <div class="mb-3">

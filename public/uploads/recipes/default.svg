@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="100%" height="100%" fill="#f5eee6"/>
+  <rect x="40" y="40" width="720" height="520" rx="24" fill="#fff7f0" stroke="#e6d3c2"/>
+  <text x="400" y="285" text-anchor="middle" font-family="Georgia, serif" font-size="42" fill="#6b4a36">ForkLore Recipe</text>
+  <text x="400" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#9b7b66">Image coming soon</text>
+</svg>

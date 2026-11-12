@@ -28,7 +28,7 @@
             <div class="admin-stat-icon">💬</div>
             <div class="admin-stat-meta">
                 <h3>{{ stats.openTickets ?? '—' }}</h3>
-                <span class="admin-stat-pending">Database pending</span>
+                {% if stats.openTickets is null %}<span class="admin-stat-pending">Database pending</span>{% endif %}
                 <p>Open Support Tickets</p>
             </div>
         </div>

@@ -24,9 +24,10 @@
 
         {% if recipeOfTheWeek %}
             <a href="{{ path('recipes_show', { id: recipeOfTheWeek.id }) }}" class="hero-card">
-                <img src="{{ asset(recipeOfTheWeek.image) }}" alt="{{ recipeOfTheWeek.title }}">
+                {% set img = recipeOfTheWeek.imageFilename|default('default.svg') %}
+                <img src="{{ asset('uploads/recipes/' ~ (img in ['default.jpg', 'default'] ? 'default.svg' : img)) }}" alt="{{ recipeOfTheWeek.title }}">
                 <div class="card-info">
-                    <h3>{{ recipeOfTheWeek.title }} - {{ recipeOfTheWeek.cuisine }} Dish</h3>
+                    <h3>{{ recipeOfTheWeek.title }}{% if recipeOfTheWeek.cuisine %} - {{ recipeOfTheWeek.cuisine.name }} Dish{% endif %}</h3>
                     <p>Recipe of the Week (♥ {{ recipeOfTheWeek.totalLikes }})</p>
                 </div>
             </a>
@@ -49,9 +50,10 @@
         <div class="recipe-grid">
             {% for recipe in featuredRecipes %}
                 <a href="{{ path('recipes_show', { id: recipe.id }) }}" class="recipe-card">
-                    <img src="{{ asset(recipe.image) }}" alt="{{ recipe.title }}">
+                    {% set img = recipe.imageFilename|default('default.svg') %}
+                    <img src="{{ asset('uploads/recipes/' ~ (img in ['default.jpg', 'default'] ? 'default.svg' : img)) }}" alt="{{ recipe.title }}">
                     <h4>{{ recipe.title }}</h4>
-                    <p>{{ recipe.author }} • {{ recipe.cuisine }}</p>
+                    <p>{{ recipe.user ? recipe.user.username : 'Unknown' }}{% if recipe.cuisine %} • {{ recipe.cuisine.name }}{% endif %}</p>
                 </a>
             {% else %}
                 <div class="recipe-card empty-featured-card">
@@ -66,9 +68,10 @@
         <h2>Explore by Cuisines</h2>
         <div class="cuisine-cards">
             {% for cuisine in cuisines %}
+                {% set cuisineImage = cuisine.image is defined ? cuisine.image : (cuisine.imageFilename is defined ? 'uploads/cuisines/' ~ cuisine.imageFilename : 'images/' ~ (cuisine.slug|default('ph')) ~ '.jpg') %}
                 <a href="{{ path('recipes_index', { cuisine: cuisine.slug }) }}"
                    class="cuisine-tile"
-                   style="background-image: url('{{ asset(cuisine.image) }}');">
+                   style="background-image: url('{{ asset(cuisineImage) }}');">
                     <h3>{{ cuisine.name }}</h3>
                     <span>View recipes &rarr;</span>
                 </a>

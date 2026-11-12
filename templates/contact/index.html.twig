@@ -18,6 +18,13 @@
             </div>
         </div>
 
+        {% if error %}
+            <div class="support-inline-alert support-inline-alert--error" role="alert">{{ error }}</div>
+        {% endif %}
+        {% if notice %}
+            <div class="support-inline-alert support-inline-alert--success" role="status">{{ notice }}</div>
+        {% endif %}
+
         <div class="support-layout">
             <aside class="support-sidebar" aria-label="Your support conversations">
                 <div class="support-sidebar-header">
@@ -26,7 +33,11 @@
                 </div>
 
                 <div class="support-tickets-list">
-                    {% if tickets is empty %}
+                    {% if not app.user %}
+                        <div class="empty-tickets-state">
+                            <p>Please <a href="{{ path('login') }}">log in</a> to create and view your support tickets.</p>
+                        </div>
+                    {% elseif tickets is empty %}
                         <div class="empty-tickets-state">
                             <p>You have no active support tickets.</p>
                             <a href="{{ path('contact', { new: 1 }) }}">Create your first ticket &rarr;</a>
@@ -43,7 +54,7 @@
                                 <div class="ticket-subject-title">{{ ticket.subject }}</div>
                                 <div class="ticket-row-bottom">
                                     <span class="ticket-msg-snippet">
-                                        {{ ticket.lastMessage|length > 24 ? ticket.lastMessage|slice(0, 24) ~ '...' : ticket.lastMessage }}
+                                        {{ ticket.lastMessage|length > 24 ? ticket.lastMessage|slice(0, 24) ~ '...' : (ticket.lastMessage ?: 'No messages yet') }}
                                     </span>
                                     <span class="status-pill status-{{ ticket.status }}">{{ ticket.status|replace({ '_': ' ' }) }}</span>
                                 </div>
@@ -60,26 +71,31 @@
                         <h2>Start a Conversation with Support</h2>
                         <p class="new-ticket-intro">Explain what you need assistance with. Our administrators receive and reply through this thread.</p>
 
-                        <form method="post" action="{{ path('contact') }}" class="new-ticket-form">
-                            <input type="hidden" name="action" value="create_ticket">
+                        {% if app.user %}
+                            <form method="post" action="{{ path('contact') }}" class="new-ticket-form">
+                                <input type="hidden" name="action" value="create_ticket">
+                                <input type="hidden" name="_token" value="{{ csrf_token('contact_create_ticket') }}">
 
-                            <div class="support-field">
-                                <label for="subject">Subject / Topic</label>
-                                <input type="text" id="subject" name="subject" required placeholder="e.g., Recipe formatting issue or Foodie Stamp question">
-                            </div>
+                                <div class="support-field">
+                                    <label for="subject">Subject / Topic</label>
+                                    <input type="text" id="subject" name="subject" required placeholder="e.g., Recipe formatting issue or Foodie Stamp question">
+                                </div>
 
-                            <div class="support-field">
-                                <label for="message">Your Message</label>
-                                <textarea id="message" name="message" rows="6" required placeholder="Describe your question or issue in detail..."></textarea>
-                            </div>
+                                <div class="support-field">
+                                    <label for="message">Your Message</label>
+                                    <textarea id="message" name="message" rows="6" required placeholder="Describe your question or issue in detail..."></textarea>
+                                </div>
 
-                            <div class="new-ticket-actions">
-                                <button type="submit" class="primary-btn">Send Message &rarr;</button>
-                                {% if tickets is not empty %}
-                                    <a href="{{ path('contact') }}" class="support-cancel-link">Cancel</a>
-                                {% endif %}
-                            </div>
-                        </form>
+                                <div class="new-ticket-actions">
+                                    <button type="submit" class="primary-btn">Send Message &rarr;</button>
+                                    {% if tickets is not empty %}
+                                        <a href="{{ path('contact') }}" class="support-cancel-link">Cancel</a>
+                                    {% endif %}
+                                </div>
+                            </form>
+                        {% else %}
+                            <p><a href="{{ path('login') }}" class="primary-btn">Log in to open a ticket</a></p>
+                        {% endif %}
                     </div>
                 {% elseif activeTicket %}
                     <div class="chat-thread-header">
@@ -88,19 +104,19 @@
                             <p>Ticket #{{ activeTicket.id }} &bull; Created {{ activeTicket.createdAt|date('M d, Y h:i A') }}</p>
                         </div>
                         <div>
-                            <span class="status-pill status-{{ activeTicket.status }}">
+                            <span class="status-pill status-{{ activeTicket.status }}" id="ticket-status-pill">
                                 Status: {{ activeTicket.status|replace({ '_': ' ' }) }}
                             </span>
                             <span id="live-badge" class="status-pill">Live</span>
                         </div>
                     </div>
 
-                    <div class="chat-messages-body" id="messages-container">
+                    <div class="chat-messages-body" id="messages-container" data-ticket-id="{{ activeTicket.id }}" data-last-id="{{ ticketMessages|last ? ticketMessages|last.id : 0 }}">
                         {% if ticketMessages is empty %}
-                            <p class="empty-messages-notice">No messages in this conversation yet.</p>
+                            <p class="empty-messages-notice" id="empty-messages-notice">No messages in this conversation yet.</p>
                         {% else %}
                             {% for message in ticketMessages %}
-                                <div class="user-msg-bubble {{ message.isAdmin ? 'bubble-admin' : 'bubble-user' }}">
+                                <div class="user-msg-bubble {{ message.isAdmin ? 'bubble-admin' : 'bubble-user' }}" data-message-id="{{ message.id }}">
                                     <div class="bubble-meta">
                                         <span>
                                             {% if message.isAdmin %}
@@ -124,12 +140,13 @@
                             </div>
                         {% endif %}
 
-                        <form method="post" action="{{ path('contact') }}" class="chat-reply-form">
+                        <form method="post" action="{{ path('contact') }}" class="chat-reply-form" id="chat-reply-form">
                             <input type="hidden" name="action" value="send_reply">
                             <input type="hidden" name="ticket_id" value="{{ activeTicket.id }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('contact_reply_' ~ activeTicket.id) }}">
                             <label class="visually-hidden" for="reply-message">Write your reply</label>
                             <textarea id="reply-message" name="message" class="chat-textarea" placeholder="Write your reply to admin support..." required></textarea>
-                            <button type="submit" class="btn-chat-send">Send &rarr;</button>
+                            <button type="submit" class="btn-chat-send" id="chat-send-btn">Send &rarr;</button>
                         </form>
                     </div>
                 {% else %}
@@ -147,18 +164,87 @@
     <script>
         (function () {
             var container = document.getElementById('messages-container');
-            if (container) {
-                container.scrollTop = container.scrollHeight;
-            }
+            if (!container) return;
+            var ticketId = container.getAttribute('data-ticket-id');
+            if (!ticketId) return;
+            var lastId = parseInt(container.getAttribute('data-last-id') || '0', 10) || 0;
             var liveBadge = document.getElementById('live-badge');
-            setInterval(function () {
-                if (container) {
-                    container.scrollTop = container.scrollHeight;
-                }
-                if (liveBadge) {
-                    liveBadge.textContent = 'Live \u2022 ' + new Date().toLocaleTimeString();
-                }
-            }, 5000);
+            var statusPill = document.getElementById('ticket-status-pill');
+
+            function escapeHtml(s) {
+                return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            }
+            function nl2br(s) { return escapeHtml(s).replace(/\n/g,'<br>'); }
+            function scrollBottom() { container.scrollTop = container.scrollHeight; }
+            scrollBottom();
+
+            function appendMessage(m) {
+                var empty = document.getElementById('empty-messages-notice');
+                if (empty) empty.remove();
+                var wrap = document.createElement('div');
+                wrap.className = 'user-msg-bubble ' + (m.isAdmin ? 'bubble-admin' : 'bubble-user');
+                wrap.setAttribute('data-message-id', m.id);
+                var who = m.isAdmin ? ('🛡️ Admin Support (' + escapeHtml(m.sender) + ')') : ('👤 You (' + escapeHtml(m.sender) + ')');
+                wrap.innerHTML = '<div class="bubble-meta"><span>' + who + '</span><span>' + escapeHtml(m.createdAt) + '</span></div>'
+                    + '<div class="bubble-text">' + nl2br(m.message) + '</div>';
+                container.appendChild(wrap);
+                lastId = Math.max(lastId, m.id || 0);
+                container.setAttribute('data-last-id', String(lastId));
+                scrollBottom();
+            }
+
+            function poll() {
+                fetch('{{ path('contact_ticket_messages', { id: 0 }) }}'.replace('/0/', '/' + ticketId + '/') + '?after=' + lastId, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function (r) { return r.ok ? r.json() : null; })
+                    .then(function (data) {
+                        if (!data) return;
+                        if (data.messages && data.messages.length) {
+                            data.messages.forEach(appendMessage);
+                        }
+                        if (statusPill && data.status) {
+                            statusPill.textContent = 'Status: ' + data.status.replace(/_/g, ' ');
+                            statusPill.className = 'status-pill status-' + data.status;
+                        }
+                        if (liveBadge) liveBadge.textContent = 'Live • ' + new Date().toLocaleTimeString();
+                    }).catch(function () {});
+            }
+
+            setInterval(poll, 4000);
+
+            var replyForm = document.getElementById('chat-reply-form');
+            var replyInput = document.getElementById('reply-message');
+            var sendBtn = document.getElementById('chat-send-btn');
+            if (replyForm && replyInput) {
+                replyForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    var text = (replyInput.value || '').trim();
+                    if (!text) return;
+                    var formData = new FormData(replyForm);
+                    if (sendBtn) { sendBtn.disabled = true; }
+                    fetch(replyForm.action, {
+                        method: 'POST',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                        body: formData
+                    }).then(function (r) { return r.json().catch(function(){ return null; }); })
+                      .then(function (data) {
+                        if (data && data.ok && data.message) {
+                            if (!container.querySelector('[data-message-id="' + data.message.id + '"]')) {
+                                appendMessage(data.message);
+                            }
+                            replyInput.value = '';
+                            if (statusPill && data.status) {
+                                statusPill.textContent = 'Status: ' + data.status.replace(/_/g, ' ');
+                                statusPill.className = 'status-pill status-' + data.status;
+                            }
+                        } else if (data && data.error) {
+                            alert(data.error);
+                        } else {
+                            replyForm.submit();
+                        }
+                      }).catch(function () { replyForm.submit(); })
+                      .finally(function () { if (sendBtn) { sendBtn.disabled = false; } replyInput.focus(); });
+                });
+            }
         })();
     </script>
 {% endblock %}

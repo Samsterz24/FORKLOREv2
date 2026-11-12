@@ -10,7 +10,8 @@
     {% if recipe %}
     <main class="recipe-detail">
         <div class="recipe-detail-image">
-            <img src="{{ asset('uploads/recipes/' ~ (recipe.imageFilename|default('default.jpg'))) }}" alt="{{ recipe.title }}">
+            {% set img = recipe.imageFilename|default('default.svg') %}
+            <img src="{{ asset('uploads/recipes/' ~ (img in ['default.jpg', 'default'] ? 'default.svg' : img)) }}" alt="{{ recipe.title }}">
         </div>
 
         <div class="recipe-detail-content">
@@ -29,20 +30,29 @@
                 <span>by <strong>{{ recipe.user ? recipe.user.username : 'Unknown' }}</strong></span>
             </p>
 
-            <div class="recipe-owner-actions">
-                <a href="{{ path('recipes_edit', { id: recipe.id }) }}" class="recipe-edit-btn">✏️ Edit Recipe</a>
-                <button type="button" class="recipe-delete-btn" disabled title="Deletion is disabled in this UI preview">🗑️ Delete Recipe</button>
-            </div>
+            {% if canManage is defined and canManage %}
+                <div class="recipe-owner-actions">
+                    <a href="{{ path('recipes_edit', { id: recipe.id }) }}" class="recipe-edit-btn">✏️ Edit Recipe</a>
+                    <form method="post" action="{{ path('recipes_delete', { id: recipe.id }) }}" onsubmit="return confirm('Are you sure you want to delete this recipe? This action cannot be undone.');" style="display:inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_recipe_' ~ recipe.id) }}">
+                        <button type="submit" class="recipe-delete-btn">🗑️ Delete Recipe</button>
+                    </form>
+                </div>
+            {% endif %}
 
             <div class="recipe-favorite">
-                <button type="button" class="favorite-btn" disabled title="Favorites are not persisted in this UI preview">
-                    ♡ {{ recipe.totalLikes }} Favorite
-                </button>
-            </div>
-
-            <div class="preview-note preview-note--inline">
-                <span aria-hidden="true">⚡</span>
-                <span><strong>UI preview:</strong> favorites, editing, and deletion are display-only until the backend is connected.</span>
+                {% if app.user %}
+                    <form method="post" action="{{ path('recipes_favorite', { id: recipe.id }) }}" class="recipe-favorite-form">
+                        <input type="hidden" name="_token" value="{{ csrf_token('favorite_recipe_' ~ recipe.id) }}">
+                        <button type="submit" class="favorite-btn {{ isFavorited ? 'favorited' : '' }}">
+                            {{ isFavorited ? '♥' : '♡' }} {{ recipe.totalLikes }} {{ recipe.totalLikes == 1 ? 'Favorite' : 'Favorites' }}
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{{ path('login') }}" class="favorite-btn" title="Log in to save favorites">
+                        ♡ {{ recipe.totalLikes }} {{ recipe.totalLikes == 1 ? 'Favorite' : 'Favorites' }}
+                    </a>
+                {% endif %}
             </div>
 
             <section>

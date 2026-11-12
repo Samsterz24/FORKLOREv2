@@ -96,7 +96,8 @@
                 {% for recipe in recipes %}
                     <a href="{{ path('recipes_show', { id: recipe.id }) }}" class="recipe-card">
                         <div class="recipe-image-wrapper">
-                            <img src="{{ asset('uploads/recipes/' ~ (recipe.imageFilename|default('default.jpg'))) }}" alt="{{ recipe.title }}" class="recipe-image">
+                            {% set img = recipe.imageFilename|default('default.svg') %}
+                            <img src="{{ asset('uploads/recipes/' ~ (img in ['default.jpg', 'default'] ? 'default.svg' : img)) }}" alt="{{ recipe.title }}" class="recipe-image">
                         </div>
 
                         <div class="recipe-tags-row">

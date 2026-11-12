@@ -31,7 +31,7 @@ class Recipe
     private string $category = 'General';
 
     #[ORM\Column(length: 255)]
-    private string $imageFilename = 'default.jpg';
+    private string $imageFilename = 'default.svg';
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $ingredients = null;

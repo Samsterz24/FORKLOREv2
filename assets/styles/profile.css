@@ -464,7 +464,11 @@
     color: #b91c1c;
     background: #ffffff;
     border: 1.5px solid #b91c1c;
-    cursor: not-allowed;
+    cursor: pointer;
+}
+
+.card-delete-btn:hover {
+    background: #fff5f5;
 }
 
 /* Empty states */

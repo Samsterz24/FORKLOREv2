@@ -23,7 +23,6 @@ final class SmokeTest extends WebTestCase
         yield 'recipes index' => ['/recipes'];
         yield 'recipes index with filters' => ['/recipes?sort=favorites&category=dinner&cuisine=italian&allergy=peanut&search=pasta'];
         yield 'recipe detail' => ['/recipes/1'];
-        yield 'recipe edit' => ['/recipes/1/edit'];
         yield 'cuisines' => ['/cuisines'];
         yield 'stories index' => ['/stories'];
         yield 'story detail' => ['/stories/1'];
@@ -38,7 +37,6 @@ final class SmokeTest extends WebTestCase
         yield 'profile stories tab' => ['/profile?tab=stories'];
         yield 'login' => ['/login'];
         yield 'register' => ['/register'];
-        yield 'share recipe' => ['/share/recipe'];
         yield 'share story' => ['/share/story'];
     }
 
@@ -96,6 +94,31 @@ final class SmokeTest extends WebTestCase
         $this->assertResponseRedirects('/');
     }
 
+    public function testShareRecipeRequiresAuthentication(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/share/recipe');
+
+        $this->assertResponseRedirects('/login');
+    }
+
+    public function testRecipeEditRequiresAuthentication(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/recipes/1/edit');
+
+        $this->assertResponseRedirects('/login');
+    }
+
+    public function testContactPostRequiresLoginMessage(): void
+    {
+        $client = static::createClient();
+        $client->request('POST', '/contact', ['action' => 'create_ticket', 'subject' => 'Help', 'message' => 'Hi']);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertStringContainsString('Please log in', (string) $client->getResponse()->getContent());
+    }
+
     public function testRecipeDetailShowsEmptyState(): void
     {
         $client = static::createClient();
@@ -128,11 +151,8 @@ final class SmokeTest extends WebTestCase
      */
     public static function previewForms(): iterable
     {
-        yield 'recipe edit' => ['/recipes/1/edit', 'recipe changes'];
         yield 'share story' => ['/share/story', 'nothing was published'];
-        yield 'contact' => ['/contact', 'tickets are not saved'];
         yield 'admin users' => ['/admin/users', 'no account was changed'];
-        yield 'admin support' => ['/admin/support', 'ticket was not updated'];
     }
 
     #[DataProvider('previewForms')]

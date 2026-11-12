@@ -117,7 +117,8 @@
                         <div class="profile-card-stack">
                             <a href="{{ path('recipes_show', { id: recipe.id }) }}" class="content-card">
                                 <div class="card-img-wrap">
-                                    <img src="{{ asset('images/' ~ recipe.imageFilename) }}" alt="{{ recipe.title }}">
+                                    {% set img = recipe.imageFilename|default('default.svg') %}
+                                    <img src="{{ asset('uploads/recipes/' ~ (img in ['default.jpg', 'default'] ? 'default.svg' : img)) }}" alt="{{ recipe.title }}">
                                 </div>
                                 <div class="card-body">
                                     <div class="card-meta">
@@ -135,7 +136,10 @@
                             </a>
                             <div class="card-owner-actions">
                                 <a href="{{ path('recipes_edit', { id: recipe.id }) }}" class="card-edit-link">✏️ Edit</a>
-                                <button type="button" class="card-delete-btn" disabled title="Deletion is disabled in this UI preview">🗑️ Delete</button>
+                                <form method="post" action="{{ path('recipes_delete', { id: recipe.id }) }}" onsubmit="return confirm('Are you sure you want to delete this recipe? This action cannot be undone.');" style="display:inline;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_recipe_' ~ recipe.id) }}">
+                                    <button type="submit" class="card-delete-btn">🗑️ Delete</button>
+                                </form>
                             </div>
                         </div>
                     {% endfor %}
@@ -154,7 +158,8 @@
                     {% for recipe in savedRecipes %}
                         <a href="{{ path('recipes_show', { id: recipe.id }) }}" class="content-card">
                             <div class="card-img-wrap">
-                                <img src="{{ asset('images/' ~ recipe.imageFilename) }}" alt="{{ recipe.title }}">
+                                {% set img = recipe.imageFilename|default('default.svg') %}
+                                <img src="{{ asset('uploads/recipes/' ~ (img in ['default.jpg', 'default'] ? 'default.svg' : img)) }}" alt="{{ recipe.title }}">
                             </div>
                             <div class="card-body">
                                 <div class="card-meta">
