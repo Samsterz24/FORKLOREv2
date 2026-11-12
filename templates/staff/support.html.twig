@@ -156,7 +156,7 @@
                 if (data.status === 'closed' && pollTimer) { clearInterval(pollTimer); pollTimer = null; }
             }).catch(function () {});
     }
-    pollTimer = setInterval(poll, 5000);
+    pollTimer = setInterval(poll, 15000);
 
     var replyForm = document.getElementById('staff-reply-form');
     if (replyForm) {

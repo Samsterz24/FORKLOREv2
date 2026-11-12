@@ -1,0 +1,18 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Access restricted - ForkLore{% endblock %}
+
+{% block content %}
+<main style="max-width:720px;margin:0 auto;padding:64px 20px;text-align:center;">
+    <h1 style="font-family:Garamond, Georgia, serif;font-size:42px;margin-bottom:12px;color:#17120d;">Oops, you can’t access that</h1>
+    <p style="color:#756b5f;font-size:16px;line-height:1.7;margin:0 auto 24px;max-width:560px;">
+        The page you tried to open is not available for your account or requires different permissions.
+    </p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a href="{{ path('home') }}" class="primary-btn">Go to Home</a>
+        {% if not app.user %}
+            <a href="{{ path('login') }}" class="primary-btn" style="background:#6b4b2a;">Log in</a>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

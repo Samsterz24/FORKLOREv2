@@ -95,19 +95,14 @@ final class StaffController extends AbstractController
 
     #[Route('/dashboard-data', name: 'staff_dashboard_data', methods: ['GET'])]
     public function data(
+        Request $request,
         EntityManagerInterface $em,
         SupportTicketRepository $ticketRepository,
         StaffWarningRepository $warningRepository,
     ): JsonResponse {
-        $data = $this->buildDashboardData($em, $ticketRepository, $warningRepository);
-        $users = array_map(static fn(User $u): array => [
-            'id' => $u->getId(),
-            'username' => $u->getUsername(),
-            'email' => $u->getEmail(),
-            'role' => $u->getRole(),
-            'status' => $u->getStatus(),
-            'banned' => $u->isBanned(),
-        ], $data['users']);
+        $light = $request->query->getBoolean('light', false);
+        $data = $this->buildDashboardData($em, $ticketRepository, $warningRepository, !$light);
+
         $tickets = array_map(static function ($t): array {
             $u = $t->getUser();
             return [
@@ -128,12 +123,24 @@ final class StaffController extends AbstractController
             ];
         }, $data['recentWarnings']);
 
-        return new JsonResponse([
+        $payload = [
             'openTickets' => $data['openTickets'],
-            'users' => $users,
             'recentTickets' => $tickets,
             'recentWarnings' => $warnings,
-        ]);
+        ];
+
+        if (!$light) {
+            $payload['users'] = array_map(static fn(User $u): array => [
+                'id' => $u->getId(),
+                'username' => $u->getUsername(),
+                'email' => $u->getEmail(),
+                'role' => $u->getRole(),
+                'status' => $u->getStatus(),
+                'banned' => $u->isBanned(),
+            ], $data['users']);
+        }
+
+        return new JsonResponse($payload);
     }
 
     /**
@@ -143,8 +150,9 @@ final class StaffController extends AbstractController
         EntityManagerInterface $em,
         SupportTicketRepository $ticketRepository,
         StaffWarningRepository $warningRepository,
+        bool $includeUsers = true,
     ): array {
-        $users = $em->getRepository(User::class)->findBy([], ['username' => 'ASC']);
+        $users = $includeUsers ? $em->getRepository(User::class)->findBy([], ['username' => 'ASC']) : [];
         $openTickets = $em->getRepository(SupportTicket::class)->count(['status' => 'open'])
             + $em->getRepository(SupportTicket::class)->count(['status' => 'in_progress']);
         $recentTickets = $ticketRepository->findBy([], ['updatedAt' => 'DESC'], 8);

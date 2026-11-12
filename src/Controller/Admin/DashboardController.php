@@ -132,26 +132,30 @@ final class DashboardController extends AbstractController
             SupportMessage::class,
             Post::class,
         ];
+        $conn = $em->getConnection();
 
         foreach ($interactionEntities as $entityClass) {
-            $rows = $em->createQueryBuilder()
-                ->select('e.createdAt AS createdAt')
-                ->from($entityClass, 'e')
-                ->andWhere('e.createdAt >= :start')
-                ->andWhere('e.createdAt < :end')
-                ->setParameter('start', $start)
-                ->setParameter('end', $end)
-                ->getQuery()
-                ->getArrayResult();
+            $meta = $em->getClassMetadata($entityClass);
+            $table = $meta->getTableName();
+            $createdAtColumn = $meta->getColumnName('createdAt');
+
+            $sql = sprintf(
+                'SELECT DATE(%s) AS day_key, COUNT(*) AS cnt FROM %s WHERE %s >= :start AND %s < :end GROUP BY day_key',
+                $createdAtColumn,
+                $table,
+                $createdAtColumn,
+                $createdAtColumn
+            );
+
+            $rows = $conn->fetchAllAssociative($sql, [
+                'start' => $start->format('Y-m-d H:i:s'),
+                'end' => $end->format('Y-m-d H:i:s'),
+            ]);
 
             foreach ($rows as $row) {
-                $createdAt = $row['createdAt'] ?? null;
-                if (!$createdAt instanceof \DateTimeInterface) {
-                    continue;
-                }
-                $key = $createdAt->format('Y-m-d');
-                if (array_key_exists($key, $countsByDay)) {
-                    $countsByDay[$key]++;
+                $key = (string) ($row['day_key'] ?? '');
+                if (isset($countsByDay[$key])) {
+                    $countsByDay[$key] += (int) ($row['cnt'] ?? 0);
                 }
             }
         }

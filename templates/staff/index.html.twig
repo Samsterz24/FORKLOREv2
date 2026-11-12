@@ -155,7 +155,7 @@
                 fetch('{{ path('staff_dashboard') }}', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }, body: fd, credentials: 'same-origin' })
                     .then(function (r) { return r.json().catch(function(){ return null; }); })
                     .then(function (data) {
-                        if (data && data.ok) { showMsg(noticeEl, data.notice || 'Updated.'); refresh(); }
+                        if (data && data.ok) { showMsg(noticeEl, data.notice || 'Updated.'); refresh('full'); }
                         else if (data && data.error) { showMsg(errorEl, data.error); }
                         else { form.submit(); }
                     }).catch(function () { form.submit(); });
@@ -230,11 +230,19 @@
         }
     }
 
-    function refresh() {
+    function refresh(mode) {
         if (document.hidden) return;
-        fetch(dataUrl, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+        var full = mode === 'full';
+        var url = dataUrl + (full ? '' : (dataUrl.indexOf('?') === -1 ? '?light=1' : '&light=1'));
+        fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
             .then(function (r) { return r.ok ? r.json() : null; })
-            .then(renderData)
+            .then(function (data) {
+                if (!data) return;
+                renderData(data);
+                if (full && Array.isArray(data.users)) {
+                    // ensure tokens exist for newly rendered users (fallback to known tokens)
+                }
+            })
             .catch(function () {});
     }
 
@@ -250,7 +258,7 @@
                     if (data && data.ok) {
                         showMsg(noticeEl, data.notice || 'Warning recorded.');
                         var reason = document.getElementById('warn-reason'); if (reason) reason.value = '';
-                        refresh();
+                        refresh('full');
                     } else if (data && data.error) { showMsg(errorEl, data.error); }
                     else { warnForm.submit(); }
                 }).catch(function () { warnForm.submit(); });
@@ -258,9 +266,8 @@
     }
 
     bindBanForms();
-    setInterval(refresh, 25000);
-    document.addEventListener('visibilitychange', function () { if (!document.hidden) refresh(); });
-    window.addEventListener('focus', refresh);
+    setInterval(function () { refresh('light'); }, 60000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) refresh('light'); });
 })();
 </script>
 {% endblock %}

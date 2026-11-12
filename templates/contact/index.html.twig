@@ -222,7 +222,7 @@
             if (initialStatus === 'closed') {
                 stopPolling('Closed');
             } else if (initialStatus) {
-                pollTimer = setInterval(poll, 4000);
+                pollTimer = setInterval(poll, 12000);
             }
 
             var replyForm = document.getElementById('chat-reply-form');
