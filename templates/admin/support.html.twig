@@ -97,15 +97,19 @@
                 </div>
 
                 <div class="admin-reply-box-wrap">
-                    <form method="post" action="{{ path('admin_support', { status: status, ticket_id: activeTicket.id }) }}" class="admin-reply-form">
-                        <input type="hidden" name="action" value="send_reply">
-                        <input type="hidden" name="ticket_id" value="{{ activeTicket.id }}">
-                        <input type="hidden" name="_token" value="{{ csrf_token('admin_support_reply_' ~ activeTicket.id) }}">
-                        <label class="visually-hidden" for="admin-reply-message">Reply to member</label>
-                        <textarea id="admin-reply-message" name="message" class="admin-reply-textarea"
-                                  placeholder="Write a helpful response to {{ activeTicket.user }}..." required></textarea>
-                        <button type="submit" class="admin-btn admin-btn-send">Reply &rarr;</button>
-                    </form>
+                    {% if activeTicket.status == 'closed' %}
+                        <div class="admin-ticket-closed-notice">This ticket is closed. Change its status to send a reply.</div>
+                    {% else %}
+                        <form method="post" action="{{ path('admin_support', { status: status, ticket_id: activeTicket.id }) }}" class="admin-reply-form">
+                            <input type="hidden" name="action" value="send_reply">
+                            <input type="hidden" name="ticket_id" value="{{ activeTicket.id }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('admin_support_reply_' ~ activeTicket.id) }}">
+                            <label class="visually-hidden" for="admin-reply-message">Reply to member</label>
+                            <textarea id="admin-reply-message" name="message" class="admin-reply-textarea"
+                                      placeholder="Write a helpful response to {{ activeTicket.user }}..." required></textarea>
+                            <button type="submit" class="admin-btn admin-btn-send">Reply &rarr;</button>
+                        </form>
+                    {% endif %}
                 </div>
             {% else %}
                 <div class="admin-empty-thread">

@@ -90,6 +90,13 @@ final class ContactController extends AbstractController
                         if ($request->isXmlHttpRequest() || str_contains((string) $request->headers->get('Accept', ''), 'application/json')) {
                             return new JsonResponse(['ok' => false, 'error' => $error], 400);
                         }
+                    } elseif ($ticket->getStatus() === 'closed') {
+                        $error = 'This ticket is closed. You cannot send new messages.';
+                        $selectedTicketId = $ticketId;
+                        $isNewView = false;
+                        if ($request->isXmlHttpRequest() || str_contains((string) $request->headers->get('Accept', ''), 'application/json')) {
+                            return new JsonResponse(['ok' => false, 'error' => $error, 'status' => 'closed'], 400);
+                        }
                     } else {
                         $message = new SupportMessage();
                         $message->setTicket($ticket);
@@ -97,9 +104,6 @@ final class ContactController extends AbstractController
                         $message->setMessage($messageText);
                         $message->setIsAdmin(false);
                         $ticket->addMessage($message);
-                        if ($ticket->getStatus() === 'closed') {
-                            $ticket->setStatus('open');
-                        }
                         $ticket->setUpdatedAt(new \DateTimeImmutable());
                         $em->persist($message);
                         $em->flush();

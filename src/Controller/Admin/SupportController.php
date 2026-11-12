@@ -50,6 +50,8 @@ final class SupportController extends AbstractController
                     $error = 'Invalid CSRF token. Please try again.';
                 } elseif ($messageText === '') {
                     $error = 'Please enter a reply.';
+                } elseif ($ticket->getStatus() === 'closed') {
+                    $error = 'This ticket is closed. Change its status to reply.';
                 } else {
                     $admin = $this->getUser();
                     if (!$admin instanceof User) {

@@ -136,18 +136,18 @@
                     <div class="chat-reply-bar">
                         {% if activeTicket.status == 'closed' %}
                             <div class="ticket-closed-notice">
-                                <span>This ticket is marked as resolved/closed. Sending a reply will reopen it.</span>
+                                <span>This ticket is closed. You cannot send new messages.</span>
                             </div>
+                        {% else %}
+                            <form method="post" action="{{ path('contact') }}" class="chat-reply-form" id="chat-reply-form">
+                                <input type="hidden" name="action" value="send_reply">
+                                <input type="hidden" name="ticket_id" value="{{ activeTicket.id }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('contact_reply_' ~ activeTicket.id) }}">
+                                <label class="visually-hidden" for="reply-message">Write your reply</label>
+                                <textarea id="reply-message" name="message" class="chat-textarea" placeholder="Write your reply to admin support..." required></textarea>
+                                <button type="submit" class="btn-chat-send" id="chat-send-btn">Send &rarr;</button>
+                            </form>
                         {% endif %}
-
-                        <form method="post" action="{{ path('contact') }}" class="chat-reply-form" id="chat-reply-form">
-                            <input type="hidden" name="action" value="send_reply">
-                            <input type="hidden" name="ticket_id" value="{{ activeTicket.id }}">
-                            <input type="hidden" name="_token" value="{{ csrf_token('contact_reply_' ~ activeTicket.id) }}">
-                            <label class="visually-hidden" for="reply-message">Write your reply</label>
-                            <textarea id="reply-message" name="message" class="chat-textarea" placeholder="Write your reply to admin support..." required></textarea>
-                            <button type="submit" class="btn-chat-send" id="chat-send-btn">Send &rarr;</button>
-                        </form>
                     </div>
                 {% else %}
                     <div class="empty-thread-state">
