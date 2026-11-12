@@ -122,11 +122,12 @@
                                         <input type="hidden" name="_token" value="{{ csrf_token('admin_user_toggle_status_' ~ user.id) }}">
                                         {% if user.status == 'active' %}
                                             <button type="submit" class="admin-btn admin-btn-ban"
-                                                    {{ user.id == currentAdminId ? 'disabled title="Cannot change your own account status"' : '' }}>
+                                                    {{ (user.id == currentAdminId or user.username == protectedAdminUsername) ? 'disabled title="Cannot ban or disable protected admin"' : '' }}>
                                                 Disable/Ban
                                             </button>
                                         {% else %}
-                                            <button type="submit" class="admin-btn admin-btn-unban">Activate/Unban</button>
+                                            <button type="submit" class="admin-btn admin-btn-unban"
+                                                    {{ user.username == protectedAdminUsername ? 'disabled title="Protected admin account"' : '' }}>Activate/Unban</button>
                                         {% endif %}
                                     </form>
 
@@ -136,7 +137,7 @@
                                         <input type="hidden" name="user_id" value="{{ user.id }}">
                                         <input type="hidden" name="_token" value="{{ csrf_token('admin_user_delete_user_' ~ user.id) }}">
                                         <button type="submit" class="admin-btn admin-btn-ban"
-                                                {{ user.id == currentAdminId ? 'disabled title="Cannot delete your own account"' : '' }}>
+                                                {{ (user.id == currentAdminId or user.username == protectedAdminUsername) ? 'disabled title="Cannot delete protected admin"' : '' }}>
                                             Delete User
                                         </button>
                                     </form>

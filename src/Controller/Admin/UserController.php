@@ -8,6 +8,7 @@ use App\Entity\User;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -16,6 +17,17 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/admin')]
 final class UserController extends AbstractController
 {
+    public function __construct(
+        #[Autowire('%app.protected_admin_username%')]
+        private readonly string $protectedAdminUsername = '',
+    ) {
+    }
+
+    private function isProtectedAdmin(User $user): bool
+    {
+        return $this->protectedAdminUsername !== '' && $user->getUsername() === $this->protectedAdminUsername;
+    }
+
     #[Route('/users', name: 'admin_users', methods: ['GET', 'POST'])]
     public function index(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher): Response
     {
@@ -38,7 +50,9 @@ final class UserController extends AbstractController
             } elseif (!$target) {
                 $error = 'User not found.';
             } elseif ($action === 'toggle_status') {
-                if ($currentId !== null && $target->getId() === $currentId) {
+                if ($this->isProtectedAdmin($target)) {
+                    $error = 'The protected admin account cannot be banned or disabled.';
+                } elseif ($currentId !== null && $target->getId() === $currentId) {
                     $error = 'You cannot change your own account status.';
                 } else {
                     $target->setStatus($target->getStatus() === 'banned' ? 'active' : 'banned');
@@ -66,7 +80,9 @@ final class UserController extends AbstractController
             } elseif ($action === 'reset_password') {
                 [$error, $notice] = $this->handleResetPassword($request, $hasher, $em, $target);
             } elseif ($action === 'delete_user') {
-                if ($currentId !== null && $target->getId() === $currentId) {
+                if ($this->isProtectedAdmin($target)) {
+                    $error = 'The protected admin account cannot be deleted.';
+                } elseif ($currentId !== null && $target->getId() === $currentId) {
                     $error = 'You cannot delete your own account.';
                 } else {
                     $username = $target->getUsername();
@@ -103,6 +119,7 @@ final class UserController extends AbstractController
         return $this->render('admin/users.html.twig', [
             'users' => $viewUsers,
             'currentAdminId' => $currentAdminId,
+            'protectedAdminUsername' => $this->protectedAdminUsername,
             'notice' => $notice,
             'error' => $error,
         ]);
