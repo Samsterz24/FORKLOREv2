@@ -15,8 +15,8 @@
             <div class="story-badge-row">
                 <span class="story-location-tag">{{ story.location }}</span>
                 {% if story.cuisine %}
-                    <a href="{{ path('recipes_index', { cuisine: story.cuisineSlug }) }}" class="badge story-cuisine-badge">
-                        {{ story.cuisine }} Cuisine
+                    <a href="{{ path('recipes_index', { cuisine: story.cuisine.slug }) }}" class="badge story-cuisine-badge">
+                        {{ story.cuisine.name }} Cuisine
                     </a>
                 {% endif %}
             </div>
@@ -24,16 +24,17 @@
             <h1>{{ story.title }}</h1>
 
             <div class="story-meta-row">
-                <span>By <b>{{ story.author }}</b></span>
+                <span>By <b>{{ story.authorName }}</b></span>
                 <span>&bull;</span>
                 <span>{{ story.createdAt|date('F j, Y') }}</span>
                 <span>&bull;</span>
-                <span>♥ {{ story.saves }} saves</span>
+                <span>♥ {{ story.savesCount }} saves</span>
             </div>
         </header>
 
         <div class="story-detail-banner">
-            <img src="{{ asset(story.image) }}" alt="{{ story.title }}">
+            {% set img = story.imageFilename|default('default.svg') %}
+            <img src="{{ asset('uploads/stories/' ~ (img in ['default.jpg','default'] ? 'default.svg' : img)) }}" alt="{{ story.title }}">
         </div>
 
         {% if story.quote %}
@@ -43,27 +44,27 @@
         {% endif %}
 
         <article class="story-narrative">
-            {{ story.narrative|nl2br }}
+            {{ narrative|nl2br }}
         </article>
 
-        {% if story.highlights is not empty %}
+        {% if highlights is not empty %}
             <div class="story-highlights-box">
                 <h3>Traditions &amp; Story Highlights</h3>
                 <ul>
-                    {% for highlight in story.highlights %}
+                    {% for highlight in highlights %}
                         <li>{{ highlight }}</li>
                     {% endfor %}
                 </ul>
             </div>
         {% endif %}
 
-        {% if story.recipeId and story.recipeTitle %}
+        {% if story.recipe %}
             <div class="story-related-recipe">
                 <div>
                     <span class="story-related-label">Related Community Recipe</span>
-                    <h4>{{ story.recipeTitle }}</h4>
+                    <h4>{{ story.recipe.title }}</h4>
                 </div>
-                <a href="{{ path('recipes_show', { id: story.recipeId }) }}" class="primary-btn">View Recipe &rarr;</a>
+                <a href="{{ path('recipes_show', { id: story.recipe.id }) }}" class="primary-btn">View Recipe &rarr;</a>
             </div>
         {% endif %}
     </main>

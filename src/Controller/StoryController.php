@@ -25,24 +25,20 @@ final class StoryController extends AbstractController
         $form = $this->createForm(StoryType::class, $story);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $user = $this->em->getRepository(User::class)->findOneBy([]);
-            if (!$user) {
-                $user = new User();
-                $user->setUsername('demo');
-                $user->setEmail('demo@example.com');
-                $user->setPassword('demo');
-                $this->em->persist($user);
-            }
+        $user = $this->getUser();
+        if ($form->isSubmitted() && $form->isValid() && $user instanceof User) {
             $story->setUser($user);
+            $story->setAuthorName($user->getUsername());
             $this->em->persist($story);
             $this->em->flush();
             return $this->redirectToRoute('stories_index');
         }
 
+        $stories = $this->em->getRepository(Story::class)->findBy([], ['createdAt' => 'DESC']);
+
         return $this->render('stories/index.html.twig', [
-            'featuredStory' => null,
-            'otherStories' => $this->em->getRepository(Story::class)->findAll(),
+            'featuredStory' => $stories[0] ?? null,
+            'otherStories' => count($stories) > 1 ? array_slice($stories, 1) : [],
             'cuisines' => $this->em->getRepository(Cuisine::class)->findAll(),
             'form' => $form->createView(),
         ]);
@@ -51,8 +47,19 @@ final class StoryController extends AbstractController
     #[Route('/stories/{id}', name: 'stories_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(int $id): Response
     {
+        $story = $this->em->getRepository(Story::class)->find($id);
+        $extra = [];
+        if ($story && $story->getDataFile()) {
+            $decoded = json_decode((string) $story->getDataFile(), true);
+            if (is_array($decoded)) {
+                $extra = $decoded;
+            }
+        }
+
         return $this->render('stories/show.html.twig', [
-            'story' => $this->em->getRepository(Story::class)->find($id),
+            'story' => $story,
+            'narrative' => is_string($extra['narrative'] ?? null) ? $extra['narrative'] : ($story?->getQuote() ?? ''),
+            'highlights' => is_array($extra['highlights'] ?? null) ? $extra['highlights'] : [],
         ]);
     }
 }

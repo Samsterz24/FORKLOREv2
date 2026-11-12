@@ -14,21 +14,30 @@
             <p>A recipe is more than ingredients on a page. Share the grandfather who taught you to barbecue, the celebration where this dish first appeared, or the aroma that brings you back home.</p>
         </div>
 
+        {% if error %}
+            <div class="support-inline-alert support-inline-alert--error" role="alert" style="max-width: 900px; margin: 0 auto 16px;">{{ error }}</div>
+        {% endif %}
+        {% if notice %}
+            <div class="support-inline-alert support-inline-alert--success" role="status" style="max-width: 900px; margin: 0 auto 16px;">{{ notice }}</div>
+        {% endif %}
+
         <form action="{{ path('share_story') }}" method="post" enctype="multipart/form-data" class="share-form">
+            <input type="hidden" name="_token" value="{{ csrf_token('share_story') }}">
             <div class="share-form-panel">
                 <div class="mb-3">
                     <label for="title" class="form-label">Story Title:</label>
-                    <input type="text" id="title" name="title" class="form-control" placeholder="e.g. My Mother's Secret Sunday Stew" required>
+                    <input type="text" id="title" name="title" class="form-control" placeholder="e.g. My Mother's Secret Sunday Stew" value="{{ submitted.title|default('') }}" required>
                 </div>
 
                 <div class="mb-3">
                     <label for="location" class="form-label">Location / Origin:</label>
-                    <input type="text" id="location" name="location" class="form-control" placeholder="e.g. CEBU • PHILIPPINES or BOLOGNA • ITALY" required>
+                    <input type="text" id="location" name="location" class="form-control" placeholder="e.g. CEBU • PHILIPPINES or BOLOGNA • ITALY" value="{{ submitted.location|default('') }}" required>
                 </div>
 
                 <div class="mb-3">
                     <label for="author_name" class="form-label">Author Name:</label>
-                    <input type="text" id="author_name" name="author_name" class="form-control" value="{{ authorName }}" required>
+                    <input type="text" id="author_name" class="form-control" value="{{ authorName }}" readonly>
+                    <small class="form-hint">Stories are published under your account name.</small>
                 </div>
 
                 <div class="mb-3">
@@ -36,7 +45,7 @@
                     <select id="cuisine_id" name="cuisine_id" class="form-select">
                         <option value="">-- None / Select Cuisine --</option>
                         {% for cuisine in cuisines %}
-                            <option value="{{ cuisine.id }}">{{ cuisine.name }}</option>
+                            <option value="{{ cuisine.id }}" {{ submitted.cuisine_id|default('') == cuisine.id ? 'selected' : '' }}>{{ cuisine.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -47,7 +56,7 @@
                         <select id="recipe_id" name="recipe_id" class="form-select">
                             <option value="">-- Do not link a recipe --</option>
                             {% for recipe in userRecipes %}
-                                <option value="{{ recipe.id }}">{{ recipe.title }}</option>
+                                <option value="{{ recipe.id }}" {{ submitted.recipe_id|default('') == recipe.id ? 'selected' : '' }}>{{ recipe.title }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -55,22 +64,23 @@
 
                 <div class="mb-3">
                     <label for="story_image" class="form-label">Story Photo:</label>
-                    <input type="file" id="story_image" name="story_image" class="form-control" accept="image/*" required>
+                    <input type="file" id="story_image" name="story_image" class="form-control" accept="image/jpeg,image/png,image/webp" required>
+                    <small class="form-hint">Upload a JPG, PNG, or WebP image (max 5MB).</small>
                 </div>
 
                 <div class="mb-3">
                     <label for="quote" class="form-label">Key Quote / Core Memory (1-2 sentences):</label>
-                    <textarea id="quote" name="quote" class="form-control" rows="3" placeholder="A single memorable quote or the essence of your story..." required></textarea>
+                    <textarea id="quote" name="quote" class="form-control" rows="3" placeholder="A single memorable quote or the essence of your story..." required>{{ submitted.quote|default('') }}</textarea>
                 </div>
 
                 <div class="mb-3">
                     <label for="story" class="form-label">The Full Story &amp; Narrative:</label>
-                    <textarea id="story" name="story" class="form-control" rows="8" placeholder="Tell us the history, the kitchen sounds, the people who cooked it, and why it matters..." required></textarea>
+                    <textarea id="story" name="story" class="form-control" rows="8" placeholder="Tell us the history, the kitchen sounds, the people who cooked it, and why it matters..." required>{{ submitted.story|default('') }}</textarea>
                 </div>
 
                 <div class="mb-3">
                     <label for="highlights" class="form-label">Story Highlights / Traditions (one per line):</label>
-                    <textarea id="highlights" name="highlights" class="form-control" rows="4" placeholder="Hand-ground native spices&#10;Simmered on an open hearth&#10;Shared every Christmas Eve"></textarea>
+                    <textarea id="highlights" name="highlights" class="form-control" rows="4" placeholder="Hand-ground native spices&#10;Simmered on an open hearth&#10;Shared every Christmas Eve">{{ submitted.highlights|default('') }}</textarea>
                 </div>
 
                 <button type="submit" class="btn btn-primary">Publish Story</button>

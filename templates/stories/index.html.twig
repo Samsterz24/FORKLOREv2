@@ -16,30 +16,31 @@
             </div>
 
             <div class="stories-actions">
-                <button type="button" class="primary-btn" id="open-create-story">+ Tell Your Story</button>
+                <a href="{{ path('share_story') }}" class="primary-btn">+ Tell Your Story</a>
             </div>
         </div>
 
         {% if featuredStory %}
             <a href="{{ path('stories_show', { id: featuredStory.id }) }}" class="featured-story-hero">
                 <div class="story-hero-img">
-                    <img src="{{ asset(featuredStory.image) }}" alt="{{ featuredStory.title }}">
+                    {% set img = featuredStory.imageFilename|default('default.svg') %}
+                    <img src="{{ asset('uploads/stories/' ~ (img in ['default.jpg','default'] ? 'default.svg' : img)) }}" alt="{{ featuredStory.title }}">
                 </div>
                 <div class="story-hero-body">
                     <div>
                         <div class="story-badge-row">
                             <span class="story-location-tag">{{ featuredStory.location }}</span>
                             {% if featuredStory.cuisine %}
-                                <span class="badge story-cuisine-badge">{{ featuredStory.cuisine }}</span>
+                                <span class="badge story-cuisine-badge">{{ featuredStory.cuisine.name }}</span>
                             {% endif %}
                         </div>
                         <h2>{{ featuredStory.title }}</h2>
-                        <blockquote>"{{ featuredStory.quote }}"</blockquote>
-                        <p class="author">&mdash; {{ featuredStory.author }}</p>
+                        {% if featuredStory.quote %}<blockquote>"{{ featuredStory.quote }}"</blockquote>{% endif %}
+                        <p class="author">&mdash; {{ featuredStory.authorName }}</p>
                     </div>
 
                     <div class="story-footer">
-                        <span class="saves-count"><b>{{ featuredStory.saves }}</b> saves</span>
+                        <span class="saves-count"><b>{{ featuredStory.savesCount }}</b> saves</span>
                         <span class="share-text">Read full story &rarr;</span>
                     </div>
                 </div>
@@ -52,7 +53,8 @@
                 {% for story in otherStories %}
                     <a href="{{ path('stories_show', { id: story.id }) }}" class="story-grid-card">
                         <div class="story-card-img">
-                            <img src="{{ asset(story.image) }}" alt="{{ story.title }}">
+                            {% set img = story.imageFilename|default('default.svg') %}
+                            <img src="{{ asset('uploads/stories/' ~ (img in ['default.jpg','default'] ? 'default.svg' : img)) }}" alt="{{ story.title }}">
                         </div>
                         <div class="story-card-body">
                             <div>
@@ -60,10 +62,10 @@
                                     <span class="story-location-tag">{{ story.location }}</span>
                                 </div>
                                 <h3>{{ story.title }}</h3>
-                                <blockquote>"{{ story.quote }}"</blockquote>
+                                {% if story.quote %}<blockquote>"{{ story.quote }}"</blockquote>{% endif %}
                             </div>
                             <div class="story-footer">
-                                <span class="author">&mdash; {{ story.author }}</span>
+                                <span class="author">&mdash; {{ story.authorName }}</span>
                                 <span class="share-text">Read &rarr;</span>
                             </div>
                         </div>
@@ -79,28 +81,5 @@
                 </div>
             </div>
         {% endif %}
-
-        <dialog id="create-story-modal">
-            <div class="modal-content">
-                <h2>Tell Your Story</h2>
-                {{ form_start(form) }}
-                    {{ form_row(form.title) }}
-                    {{ form_row(form.location) }}
-                    {{ form_row(form.authorName) }}
-                    {{ form_row(form.quote) }}
-                    {{ form_row(form.cuisine) }}
-                    <button type="submit" class="primary-btn">Save</button>
-                    <button type="button" class="clear-filter" id="close-create-story">Cancel</button>
-                {{ form_end(form) }}
-            </div>
-        </dialog>
-
-        <script>
-            const storyDlg = document.getElementById('create-story-modal');
-            const openStory = document.getElementById('open-create-story');
-            if (openStory) openStory.addEventListener('click', () => storyDlg.showModal());
-            const closeStory = document.getElementById('close-create-story');
-            if (closeStory) closeStory.addEventListener('click', () => storyDlg.close());
-        </script>
     </main>
 {% endblock %}

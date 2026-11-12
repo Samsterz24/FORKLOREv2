@@ -69,7 +69,7 @@
         <div class="cuisine-cards">
             {% for cuisine in cuisines %}
                 {% set cuisineImage = cuisine.image is defined ? cuisine.image : (cuisine.imageFilename is defined ? 'uploads/cuisines/' ~ cuisine.imageFilename : 'images/' ~ (cuisine.slug|default('ph')) ~ '.jpg') %}
-                <a href="{{ path('recipes_index', { cuisine: cuisine.slug }) }}"
+                <a href="{{ path('recipes_index', { cuisine: cuisine.slug|default('') }) }}"
                    class="cuisine-tile"
                    style="background-image: url('{{ asset(cuisineImage) }}');">
                     <h3>{{ cuisine.name }}</h3>
@@ -89,18 +89,19 @@
             <div class="stories-container{{ otherStories is empty ? ' stories-container--single' : '' }}">
                 <a href="{{ path('stories_show', { id: featuredStory.id }) }}" class="main-story-card">
                     <div class="story-img-wrapper">
-                        <img src="{{ asset(featuredStory.image) }}" alt="{{ featuredStory.title }}">
+                        {% set img = featuredStory.imageFilename|default('default.svg') %}
+                        <img src="{{ asset('uploads/stories/' ~ (img in ['default.jpg','default'] ? 'default.svg' : img)) }}" alt="{{ featuredStory.title }}">
                     </div>
                     <div class="story-content">
                         <div>
                             <span class="location">{{ featuredStory.location }}</span>
                             <h3>{{ featuredStory.title }}</h3>
-                            <blockquote>"{{ featuredStory.quote }}"</blockquote>
-                            <p class="author">- {{ featuredStory.author }}</p>
+                            {% if featuredStory.quote %}<blockquote>"{{ featuredStory.quote }}"</blockquote>{% endif %}
+                            <p class="author">- {{ featuredStory.authorName }}</p>
                         </div>
 
                         <div class="story-footer">
-                            <span class="saves-count"><b>{{ featuredStory.saves }}</b> saves</span>
+                            <span class="saves-count"><b>{{ featuredStory.savesCount }}</b> saves</span>
                             <span class="share-text">Read story &rarr;</span>
                         </div>
                     </div>
@@ -111,7 +112,8 @@
                         {% for story in otherStories %}
                             <a href="{{ path('stories_show', { id: story.id }) }}" class="story-item">
                                 <div class="story-thumb-placeholder">
-                                    <img src="{{ asset(story.image) }}" alt="{{ story.title }}">
+                                    {% set img = story.imageFilename|default('default.svg') %}
+                                    <img src="{{ asset('uploads/stories/' ~ (img in ['default.jpg','default'] ? 'default.svg' : img)) }}" alt="{{ story.title }}">
                                 </div>
                                 <div>
                                     <span class="location">{{ story.location }}</span>

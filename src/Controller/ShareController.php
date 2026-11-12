@@ -6,12 +6,15 @@ namespace App\Controller;
 
 use App\Entity\Cuisine;
 use App\Entity\Recipe;
+use App\Entity\Story;
 use App\Entity\User;
 use App\Form\RecipeType;
 use App\Service\RecipeImageStorage;
+use App\Service\StoryImageStorage;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -113,18 +116,111 @@ final class ShareController extends AbstractController
     }
 
     #[Route('/share/story', name: 'share_story', methods: ['GET', 'POST'])]
-    public function story(Request $request): Response
+    #[IsGranted('ROLE_USER')]
+    public function story(Request $request, EntityManagerInterface $em, StoryImageStorage $storyImageStorage): Response
     {
-        $notice = null;
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        foreach (self::REFERENCE_CUISINES as $ref) {
+            $existing = $em->getRepository(Cuisine::class)->findOneBy(['slug' => $ref['slug']]);
+            if (!$existing) {
+                $cuisine = new Cuisine();
+                $cuisine->setName($ref['name']);
+                $cuisine->setSlug($ref['slug']);
+                $em->persist($cuisine);
+            }
+        }
+        $em->flush();
+
+        $cuisines = $em->getRepository(Cuisine::class)->findBy([], ['name' => 'ASC']);
+        $userRecipes = $em->getRepository(Recipe::class)->findBy(['user' => $user], ['createdAt' => 'DESC']);
+
+        $error = null;
+        $submitted = [
+            'title' => '',
+            'location' => '',
+            'cuisine_id' => '',
+            'recipe_id' => '',
+            'quote' => '',
+            'story' => '',
+            'highlights' => '',
+        ];
+
         if ($request->isMethod('POST')) {
-            $notice = 'UI preview only — your story was accepted visually, but nothing was published or stored.';
+            $token = (string) $request->request->get('_token', '');
+            $submitted['title'] = trim((string) $request->request->get('title', ''));
+            $submitted['location'] = trim((string) $request->request->get('location', ''));
+            $submitted['cuisine_id'] = trim((string) $request->request->get('cuisine_id', ''));
+            $submitted['recipe_id'] = trim((string) $request->request->get('recipe_id', ''));
+            $submitted['quote'] = trim((string) $request->request->get('quote', ''));
+            $submitted['story'] = trim((string) $request->request->get('story', ''));
+            $submitted['highlights'] = trim((string) $request->request->get('highlights', ''));
+
+            $imageFile = $request->files->get('story_image');
+            $imageError = $storyImageStorage->validateUploadedImage($imageFile instanceof UploadedFile ? $imageFile : null, true);
+
+            if (!$this->isCsrfTokenValid('share_story', $token)) {
+                $error = 'Invalid CSRF token. Please try again.';
+            } elseif ($submitted['title'] === '' || $submitted['location'] === '' || $submitted['quote'] === '' || $submitted['story'] === '') {
+                $error = 'Please fill in all required fields.';
+            } elseif ($imageError) {
+                $error = $imageError;
+            } else {
+                $story = new Story();
+                $story->setUser($user);
+                $story->setAuthorName($user->getUsername());
+                $story->setTitle($submitted['title']);
+                $story->setLocation($submitted['location']);
+                $story->setQuote($submitted['quote']);
+
+                if ($submitted['cuisine_id'] !== '') {
+                    $cuisine = $em->getRepository(Cuisine::class)->find((int) $submitted['cuisine_id']);
+                    if ($cuisine) {
+                        $story->setCuisine($cuisine);
+                    }
+                }
+                if ($submitted['recipe_id'] !== '') {
+                    $recipe = $em->getRepository(Recipe::class)->find((int) $submitted['recipe_id']);
+                    if ($recipe && $recipe->getUser() && $recipe->getUser()->getId() === $user->getId()) {
+                        $story->setRecipe($recipe);
+                    }
+                }
+
+                $highlights = [];
+                if ($submitted['highlights'] !== '') {
+                    foreach (preg_split('/\r\n|\r|\n/', $submitted['highlights']) ?: [] as $line) {
+                        $line = trim($line);
+                        if ($line !== '') {
+                            $highlights[] = $line;
+                        }
+                    }
+                }
+                $story->setDataFile(json_encode([
+                    'narrative' => $submitted['story'],
+                    'highlights' => $highlights,
+                ], JSON_UNESCAPED_UNICODE));
+
+                if ($imageFile instanceof UploadedFile) {
+                    $story->setImageFilename($storyImageStorage->store($imageFile));
+                }
+
+                $em->persist($story);
+                $em->flush();
+
+                return $this->redirectToRoute('stories_show', ['id' => $story->getId()]);
+            }
         }
 
         return $this->render('share/story.html.twig', [
-            'cuisines' => [],
-            'userRecipes' => [],
-            'authorName' => '',
-            'notice' => $notice,
+            'cuisines' => $cuisines,
+            'userRecipes' => $userRecipes,
+            'authorName' => $user->getUsername(),
+            'notice' => null,
+            'error' => $error,
+            'submitted' => $submitted,
         ]);
     }
 }

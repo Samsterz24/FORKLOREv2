@@ -37,7 +37,6 @@ final class SmokeTest extends WebTestCase
         yield 'profile stories tab' => ['/profile?tab=stories'];
         yield 'login' => ['/login'];
         yield 'register' => ['/register'];
-        yield 'share story' => ['/share/story'];
     }
 
     /**
@@ -119,6 +118,14 @@ final class SmokeTest extends WebTestCase
         $this->assertStringContainsString('Please log in', (string) $client->getResponse()->getContent());
     }
 
+    public function testShareStoryRequiresAuthentication(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/share/story');
+
+        $this->assertResponseRedirects('/login');
+    }
+
     public function testRecipeDetailShowsEmptyState(): void
     {
         $client = static::createClient();
@@ -151,7 +158,6 @@ final class SmokeTest extends WebTestCase
      */
     public static function previewForms(): iterable
     {
-        yield 'share story' => ['/share/story', 'nothing was published'];
         yield 'admin users' => ['/admin/users', 'no account was changed'];
     }
 
