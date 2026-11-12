@@ -28,7 +28,9 @@ class RecipeRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('r')
             ->join('r.cuisine', 'c')
             ->andWhere('c.id = :id')
+            ->andWhere('r.isPublic = :public')
             ->setParameter('id', $cuisineId)
+            ->setParameter('public', true)
             ->orderBy('r.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
@@ -41,7 +43,9 @@ class RecipeRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('r')
             ->leftJoin('r.user', 'u')->addSelect('u')
-            ->leftJoin('r.cuisine', 'c')->addSelect('c');
+            ->leftJoin('r.cuisine', 'c')->addSelect('c')
+            ->andWhere('r.isPublic = :public')
+            ->setParameter('public', true);
 
         $search = trim($search);
         if ($search !== '') {

@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Entity\Favorite;
+use App\Entity\Post;
 use App\Entity\Recipe;
+use App\Entity\Reply;
+use App\Entity\StaffWarning;
+use App\Entity\StorySave;
+use App\Entity\SupportMessage;
 use App\Entity\SupportTicket;
 use App\Entity\User;
 use App\Repository\SupportMessageRepository;
@@ -72,18 +78,91 @@ final class DashboardController extends AbstractController
             ];
         }
 
+        $warningRows = $em->getRepository(StaffWarning::class)->findBy([], ['createdAt' => 'DESC'], 20);
+        $recentWarnings = array_map(static fn(StaffWarning $w): array => [
+            'id' => $w->getId(),
+            'staff' => $w->getStaff()->getUsername(),
+            'target' => $w->getTargetUser()->getUsername(),
+            'targetId' => $w->getTargetUser()->getId(),
+            'targetUsername' => $w->getTargetUser()->getUsername(),
+            'reason' => $w->getReason(),
+            'createdAt' => $w->getCreatedAt(),
+        ], $warningRows);
+
+        $chart = $this->buildInteractionChart($em, $now);
+
         return $this->render('admin/dashboard.html.twig', [
             'timeframe' => $timeframe,
             'stats' => [
                 'users' => $userCount,
                 'recipes' => $recipeCount,
                 'openTickets' => $openTickets,
-                'logs' => null,
+                'logs' => count($recentWarnings),
             ],
-            'chart' => null,
+            'chart' => $chart,
             'leaderboard' => $leaderboard,
             'recentTickets' => $recentTickets,
             'recentLogs' => [],
+            'recentWarnings' => $recentWarnings,
         ]);
+    }
+
+    /**
+     * @return array{labels: list<string>, values: list<int>}
+     */
+    private function buildInteractionChart(EntityManagerInterface $em, \DateTimeImmutable $now): array
+    {
+        $start = $now->modify('-6 days')->setTime(0, 0, 0);
+        $labels = [];
+        $values = [];
+        $countsByDay = [];
+
+        for ($i = 0; $i < 7; $i++) {
+            $day = $start->modify('+' . $i . ' days');
+            $key = $day->format('Y-m-d');
+            $labels[] = $day->format('M j');
+            $countsByDay[$key] = 0;
+        }
+
+        $end = $start->modify('+7 days');
+        $interactionEntities = [
+            Reply::class,
+            Favorite::class,
+            StorySave::class,
+            SupportMessage::class,
+            Post::class,
+        ];
+
+        foreach ($interactionEntities as $entityClass) {
+            $rows = $em->createQueryBuilder()
+                ->select('e.createdAt AS createdAt')
+                ->from($entityClass, 'e')
+                ->andWhere('e.createdAt >= :start')
+                ->andWhere('e.createdAt < :end')
+                ->setParameter('start', $start)
+                ->setParameter('end', $end)
+                ->getQuery()
+                ->getArrayResult();
+
+            foreach ($rows as $row) {
+                $createdAt = $row['createdAt'] ?? null;
+                if (!$createdAt instanceof \DateTimeInterface) {
+                    continue;
+                }
+                $key = $createdAt->format('Y-m-d');
+                if (array_key_exists($key, $countsByDay)) {
+                    $countsByDay[$key]++;
+                }
+            }
+        }
+
+        foreach ($countsByDay as $count) {
+            $values[] = $count;
+        }
+
+        return [
+            'labels' => $labels,
+            'values' => $values,
+        ];
     }
 }

@@ -47,6 +47,13 @@
                     {{ form_errors(form.ingredients) }}
                 </div>
 
+                <div class="mb-3">
+                    {{ form_label(form.instructions, 'Instructions / Steps:', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.instructions, {'attr': {'class': 'form-control', 'rows': 8, 'placeholder': "1. Prepare ingredients...\n2. Cook and combine...\n3. Serve and enjoy."}}) }}
+                    {{ form_errors(form.instructions) }}
+                    <small class="form-hint">Write clear step-by-step instructions for preparing the recipe.</small>
+                </div>
+
                 <div class="mb-3 monetization-box">
                     <label class="monetization-label">💰 Recipe Monetization</label>
                     {% if hasFoodieStamp %}

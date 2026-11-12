@@ -36,11 +36,17 @@ class Recipe
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $ingredients = null;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $instructions = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $dataFile = null;
 
     #[ORM\Column]
     private int $totalLikes = 0;
+
+    #[ORM\Column]
+    private bool $isPublic = true;
 
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
@@ -63,9 +69,13 @@ class Recipe
     public function setImageFilename(string $imageFilename): self { $this->imageFilename = $imageFilename; return $this; }
     public function getIngredients(): ?string { return $this->ingredients; }
     public function setIngredients(?string $ingredients): self { $this->ingredients = $ingredients; return $this; }
+    public function getInstructions(): ?string { return $this->instructions; }
+    public function setInstructions(?string $instructions): self { $this->instructions = $instructions; return $this; }
     public function getDataFile(): ?string { return $this->dataFile; }
     public function setDataFile(?string $dataFile): self { $this->dataFile = $dataFile; return $this; }
     public function getTotalLikes(): int { return $this->totalLikes; }
     public function setTotalLikes(int $totalLikes): self { $this->totalLikes = $totalLikes; return $this; }
+    public function isPublic(): bool { return $this->isPublic; }
+    public function setIsPublic(bool $isPublic): self { $this->isPublic = $isPublic; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
 }

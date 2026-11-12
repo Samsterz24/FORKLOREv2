@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Favorite;
 use App\Entity\Recipe;
 use App\Entity\Story;
 use App\Entity\User;
+use App\Repository\StorySaveRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,41 +20,109 @@ final class ProfileController extends AbstractController
     public function __construct(private EntityManagerInterface $em) {}
 
     #[Route('/profile', name: 'profile', methods: ['GET', 'POST'])]
-    public function index(Request $request): Response
+    public function index(Request $request, StorySaveRepository $storySaveRepository): Response
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            $tab = (string) $request->query->get('tab', 'recipes');
+            return $this->render('profile/index.html.twig', [
+                'profile' => null,
+                'isOwner' => false,
+                'tab' => in_array($tab, ['recipes', 'saved', 'stories'], true) ? $tab : 'recipes',
+                'uploadedRecipes' => [],
+                'savedRecipes' => [],
+                'savedStories' => [],
+                'submittedStories' => [],
+                'notice' => null,
+                'error' => null,
+            ]);
+        }
+
+        return $this->showProfile($request, $user, true, $storySaveRepository);
+    }
+
+    #[Route('/profile/{username}', name: 'profile_show', methods: ['GET'], requirements: ['username' => '[A-Za-z0-9_.-]+'])]
+    public function show(string $username, Request $request, StorySaveRepository $storySaveRepository): Response
+    {
+        $profile = $this->em->getRepository(User::class)->findOneBy(['username' => $username]);
+        if (!$profile) {
+            throw $this->createNotFoundException('User not found.');
+        }
+
+        $current = $this->getUser();
+        $isOwner = $current instanceof User && $current->getId() === $profile->getId();
+
+        return $this->showProfile($request, $profile, $isOwner, $storySaveRepository);
+    }
+
+    #[Route('/profile/recipe/{id}/visibility', name: 'profile_recipe_visibility', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function toggleRecipeVisibility(int $id, Request $request): Response
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $recipe = $this->em->getRepository(Recipe::class)->find($id);
+        $token = (string) $request->request->get('_token', '');
+        if (!$recipe || $recipe->getUser()->getId() !== $user->getId()) {
+            throw $this->createNotFoundException();
+        }
+        if (!$this->isCsrfTokenValid('recipe_visibility_' . $recipe->getId(), $token)) {
+            $this->addFlash('error', 'Invalid CSRF token.');
+        } else {
+            $recipe->setIsPublic(!$recipe->isPublic());
+            $this->em->flush();
+        }
+
+        return $this->redirectToRoute('profile', ['tab' => 'recipes']);
+    }
+
+    private function showProfile(Request $request, User $profile, bool $isOwner, StorySaveRepository $storySaveRepository): Response
     {
         $tab = (string) $request->query->get('tab', 'recipes');
         if (!in_array($tab, ['recipes', 'saved', 'stories'], true)) {
             $tab = 'recipes';
         }
-
-        $user = $this->getUser();
-        $profile = $user instanceof User ? $user : null;
+        if (!$isOwner && $tab === 'saved') {
+            $tab = 'recipes';
+        }
 
         $notice = null;
-        if ($request->isMethod('POST') && $profile) {
+        $error = null;
+        if ($isOwner && $request->isMethod('POST')) {
             $bio = trim((string) $request->request->get('bio', ''));
-            $profile->setBio($bio);
+            $profile->setBio($bio !== '' ? $bio : null);
             $this->em->flush();
             $notice = 'Profile updated.';
         }
 
-        $uploadedRecipes = $profile ? $this->em->getRepository(Recipe::class)->findBy(['user' => $profile]) : [];
-        $submittedStories = $profile ? $this->em->getRepository(Story::class)->findBy(['user' => $profile]) : [];
+        $uploadedRecipes = $this->em->getRepository(Recipe::class)->findBy(
+            $isOwner ? ['user' => $profile] : ['user' => $profile, 'isPublic' => true],
+            ['createdAt' => 'DESC']
+        );
+        $submittedStories = $this->em->getRepository(Story::class)->findBy(['user' => $profile], ['createdAt' => 'DESC']);
+
         $savedRecipes = [];
-        if ($profile) {
-            $favorites = $this->em->getRepository(\App\Entity\Favorite::class)->findBy(['user' => $profile]);
+        $savedStories = [];
+        if ($isOwner) {
+            $favorites = $this->em->getRepository(Favorite::class)->findBy(['user' => $profile], ['createdAt' => 'DESC']);
             foreach ($favorites as $fav) {
                 $savedRecipes[] = $fav->getRecipe();
             }
+            $savedStories = $storySaveRepository->findStoriesSavedByUser($profile);
         }
 
         return $this->render('profile/index.html.twig', [
             'profile' => $profile,
+            'isOwner' => $isOwner,
             'tab' => $tab,
             'uploadedRecipes' => $uploadedRecipes,
             'savedRecipes' => $savedRecipes,
+            'savedStories' => $savedStories,
             'submittedStories' => $submittedStories,
             'notice' => $notice,
+            'error' => $error,
         ]);
     }
 }

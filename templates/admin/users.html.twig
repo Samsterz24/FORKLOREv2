@@ -8,6 +8,9 @@
     {% if notice %}
         <div class="admin-alert admin-alert-success" role="status">✓ {{ notice }}</div>
     {% endif %}
+    {% if error %}
+        <div class="admin-alert admin-alert-error" role="alert">{{ error }}</div>
+    {% endif %}
 
     <section class="admin-section-card">
         <div class="admin-section-header">
@@ -39,7 +42,7 @@
                             </td>
                             <td>{{ user.email }}</td>
                             <td>
-                                <span class="admin-badge admin-badge-{{ user.role == 'admin' ? 'admin' : (user.role == 'moderator' ? 'mod' : 'user') }}">
+                                <span class="admin-badge admin-badge-{{ user.role == 'admin' ? 'admin' : (user.role == 'staff' ? 'mod' : 'user') }}">
                                     {{ user.role|upper }}
                                 </span>
                             </td>
@@ -54,6 +57,7 @@
                                           onsubmit="return confirm('Toggle status for {{ user.username|e('js') }}?');">
                                         <input type="hidden" name="action" value="toggle_status">
                                         <input type="hidden" name="user_id" value="{{ user.id }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_user_toggle_status_' ~ user.id) }}">
                                         {% if user.status == 'active' %}
                                             <button type="submit" class="admin-btn admin-btn-ban"
                                                     {{ user.id == currentAdminId ? 'disabled title="Cannot ban yourself"' : '' }}>
@@ -67,10 +71,11 @@
                                     <form method="post" action="{{ path('admin_users') }}" class="admin-role-form">
                                         <input type="hidden" name="action" value="update_role">
                                         <input type="hidden" name="user_id" value="{{ user.id }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_user_update_role_' ~ user.id) }}">
                                         <label class="visually-hidden" for="role-{{ user.id }}">Role for {{ user.username }}</label>
                                         <select name="role" id="role-{{ user.id }}" class="admin-role-select">
                                             <option value="user" {{ user.role == 'user' ? 'selected' : '' }}>user</option>
-                                            <option value="moderator" {{ user.role == 'moderator' ? 'selected' : '' }}>moderator</option>
+                                            <option value="staff" {{ user.role == 'staff' ? 'selected' : '' }}>staff</option>
                                             <option value="admin" {{ user.role == 'admin' ? 'selected' : '' }}>admin</option>
                                         </select>
                                         <button type="submit" class="admin-btn admin-btn-save"

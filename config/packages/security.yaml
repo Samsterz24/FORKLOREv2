@@ -19,6 +19,7 @@ security:
         main:
             lazy: true
             provider: app_user_provider
+            user_checker: App\Security\UserChecker
             form_login:
                 login_path: login
                 check_path: login
@@ -36,13 +37,13 @@ security:
             # switch_user: true
 
     role_hierarchy:
-        ROLE_MODERATOR: ROLE_USER
-        ROLE_ADMIN: [ROLE_MODERATOR, ROLE_USER]
+        ROLE_STAFF: ROLE_USER
+        ROLE_ADMIN: [ROLE_STAFF, ROLE_USER]
 
     # Note: Only the *first* matching rule is applied
     access_control:
         - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/moderator, roles: ROLE_MODERATOR }
+        - { path: ^/staff, roles: ROLE_STAFF }
 
 when@test:
     security:

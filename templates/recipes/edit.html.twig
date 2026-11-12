@@ -63,6 +63,12 @@
                     {{ form_errors(form.ingredients) }}
                 </div>
 
+                <div class="mb-3">
+                    {{ form_label(form.instructions, 'Instructions / Steps:', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.instructions, {'attr': {'class': 'form-control', 'rows': 8}}) }}
+                    {{ form_errors(form.instructions) }}
+                </div>
+
                 <div class="edit-recipe-submit-row">
                     <button type="submit" class="btn btn-primary">💾 Save Changes</button>
                     <a href="{{ path('recipes_show', { id: recipe.id }) }}" class="edit-recipe-discard">Discard</a>

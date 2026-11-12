@@ -193,6 +193,12 @@
                 scrollBottom();
             }
 
+            var pollTimer = null;
+            var initialStatus = {{ activeTicket ? activeTicket.status|json_encode|raw : 'null' }};
+            function stopPolling(reason) {
+                if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+                if (liveBadge) liveBadge.textContent = reason || 'Closed';
+            }
             function poll() {
                 fetch('{{ path('contact_ticket_messages', { id: 0 }) }}'.replace('/0/', '/' + ticketId + '/') + '?after=' + lastId, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
                     .then(function (r) { return r.ok ? r.json() : null; })
@@ -205,11 +211,19 @@
                             statusPill.textContent = 'Status: ' + data.status.replace(/_/g, ' ');
                             statusPill.className = 'status-pill status-' + data.status;
                         }
+                        if (data.status === 'closed') {
+                            stopPolling('Closed');
+                            return;
+                        }
                         if (liveBadge) liveBadge.textContent = 'Live • ' + new Date().toLocaleTimeString();
                     }).catch(function () {});
             }
 
-            setInterval(poll, 4000);
+            if (initialStatus === 'closed') {
+                stopPolling('Closed');
+            } else if (initialStatus) {
+                pollTimer = setInterval(poll, 4000);
+            }
 
             var replyForm = document.getElementById('chat-reply-form');
             var replyInput = document.getElementById('reply-message');

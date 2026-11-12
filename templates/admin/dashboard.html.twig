@@ -134,8 +134,8 @@
 
     <section class="admin-section-card">
         <div class="admin-section-header">
-            <h2>🧾 Recent Activity Logs</h2>
-            <span class="admin-muted">Audit trail (last 30 events)</span>
+            <h2>⚠️ Staff Warning Records</h2>
+            <span class="admin-muted">Latest warnings issued by staff (visible to admins)</span>
         </div>
 
         <div class="admin-table-responsive">
@@ -144,25 +144,23 @@
                     <tr>
                         <th class="admin-col-id">ID</th>
                         <th>Timestamp</th>
-                        <th>User</th>
-                        <th>Action</th>
-                        <th>Details</th>
-                        <th>IP Address</th>
+                        <th>Staff</th>
+                        <th>Target User</th>
+                        <th>Reason</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for log in recentLogs %}
+                    {% for w in recentWarnings|default([]) %}
                         <tr>
-                            <td><strong>#{{ log.id }}</strong></td>
-                            <td class="admin-muted">{{ log.createdAt|date('M d, Y H:i:s') }}</td>
-                            <td><strong>{{ log.user }}</strong></td>
-                            <td><span class="admin-badge admin-badge-action">{{ log.action }}</span></td>
-                            <td class="admin-log-details">{{ log.details }}</td>
-                            <td class="admin-mono">{{ log.ip }}</td>
+                            <td><strong>#{{ w.id }}</strong></td>
+                            <td class="admin-muted">{{ w.createdAt|date('M d, Y H:i') }}</td>
+                            <td><strong>{{ w.staff }}</strong></td>
+                            <td><a href="{{ path('profile_show', { username: w.targetUsername }) }}"><strong>{{ w.target }}</strong></a></td>
+                            <td class="admin-log-details">{{ w.reason }}</td>
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="6" class="admin-empty-cell">No activity logs recorded yet.</td>
+                            <td colspan="5" class="admin-empty-cell">No staff warnings recorded yet.</td>
                         </tr>
                     {% endfor %}
                 </tbody>

@@ -66,6 +66,9 @@ final class ShareController extends AbstractController
             if (!empty($draft['ingredients'])) {
                 $recipe->setIngredients((string) $draft['ingredients']);
             }
+            if (!empty($draft['instructions'])) {
+                $recipe->setInstructions((string) $draft['instructions']);
+            }
             if (!empty($draft['cuisine'])) {
                 $draftCuisine = $em->getRepository(Cuisine::class)->find((int) $draft['cuisine']);
                 if ($draftCuisine) {

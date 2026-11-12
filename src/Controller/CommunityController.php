@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Post;
+use App\Entity\Reply;
 use App\Entity\User;
 use App\Form\PostType;
+use App\Repository\ReplyRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,20 +30,12 @@ final class CommunityController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $user = $this->getUser();
-            if (!$user instanceof User) {
-                $user = $this->em->getRepository(User::class)->findOneBy([]);
-                if (!$user) {
-                    $user = new User();
-                    $user->setUsername('demo');
-                    $user->setEmail('demo@example.com');
-                    $user->setPassword('demo');
-                    $this->em->persist($user);
-                }
+            if ($user instanceof User) {
+                $post->setUser($user);
+                $this->em->persist($post);
+                $this->em->flush();
+                return $this->redirectToRoute('community_index');
             }
-            $post->setUser($user);
-            $this->em->persist($post);
-            $this->em->flush();
-            return $this->redirectToRoute('community_index');
         }
 
         $posts = $this->em->getRepository(Post::class)->findAll();
@@ -65,12 +59,42 @@ final class CommunityController extends AbstractController
     }
 
     #[Route('/community/{id}', name: 'community_show', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
-    public function show(int $id, Request $request): Response
+    public function show(int $id, Request $request, ReplyRepository $replyRepository): Response
     {
         $post = $this->em->getRepository(Post::class)->find($id);
+        $notice = null;
+        $error = null;
+
+        if ($post && $request->isMethod('POST')) {
+            $user = $this->getUser();
+            $comment = trim((string) $request->request->get('comment', ''));
+            $token = (string) $request->request->get('_token', '');
+
+            if (!$user instanceof User) {
+                $error = 'Please log in to reply.';
+            } elseif (!$this->isCsrfTokenValid('community_reply_' . $post->getId(), $token)) {
+                $error = 'Invalid CSRF token. Please try again.';
+            } elseif ($comment === '') {
+                $error = 'Please enter a reply.';
+            } else {
+                $reply = new Reply();
+                $reply->setPost($post);
+                $reply->setUser($user);
+                $reply->setComment($comment);
+                $this->em->persist($reply);
+                $this->em->flush();
+
+                return $this->redirectToRoute('community_show', ['id' => $post->getId(), '_fragment' => 'replies']);
+            }
+        }
+
+        $replies = $post ? $replyRepository->findForPost($post) : [];
+
         return $this->render('community/show.html.twig', [
             'post' => $post,
-            'notice' => null,
+            'replies' => $replies,
+            'notice' => $notice,
+            'error' => $error,
         ]);
     }
 }

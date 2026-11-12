@@ -134,6 +134,11 @@ final class RecipeController extends AbstractController
         $recipe = $this->em->getRepository(Recipe::class)->find($id);
         $user = $this->getUser();
         $canManage = $recipe ? $this->canManageRecipe($user, $recipe) : false;
+        $canView = $recipe && ($recipe->isPublic() || $canManage || $this->isGranted('ROLE_ADMIN'));
+        if (!$canView) {
+            $recipe = null;
+            $canManage = false;
+        }
         $isFavorited = false;
         if ($recipe && $user instanceof User) {
             $isFavorited = (bool) $this->em->getRepository(Favorite::class)->findOneBy([

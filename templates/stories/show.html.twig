@@ -24,11 +24,21 @@
             <h1>{{ story.title }}</h1>
 
             <div class="story-meta-row">
-                <span>By <b>{{ story.authorName }}</b></span>
+                <span>By {% if story.user %}<a href="{{ path('profile_show', { username: story.user.username }) }}"><b>{{ story.authorName }}</b></a>{% else %}<b>{{ story.authorName }}</b>{% endif %}</span>
                 <span>&bull;</span>
                 <span>{{ story.createdAt|date('F j, Y') }}</span>
                 <span>&bull;</span>
                 <span>♥ {{ story.savesCount }} saves</span>
+            </div>
+            <div class="story-actions-row" style="margin-top:12px;">
+                {% if app.user %}
+                    <form method="post" action="{{ path('stories_save', { id: story.id }) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('save_story_' ~ story.id) }}">
+                        <button type="submit" class="primary-btn">{{ isSaved ? '♥ Saved' : '♡ Save Story' }}</button>
+                    </form>
+                {% else %}
+                    <a href="{{ path('login') }}" class="primary-btn">♡ Save Story</a>
+                {% endif %}
             </div>
         </header>
 

@@ -23,8 +23,8 @@ final class HomeController extends AbstractController
     #[Route('/', name: 'home', methods: ['GET'])]
     public function index(): Response
     {
-        // Leaderboard: recipes ranked by total favorites/likes, then recency
-        $allRecipes = $this->recipeRepository->findBy([], ['totalLikes' => 'DESC', 'createdAt' => 'DESC']);
+        // Leaderboard: public recipes ranked by total favorites/likes, then recency
+        $allRecipes = $this->recipeRepository->findBy(['isPublic' => true], ['totalLikes' => 'DESC', 'createdAt' => 'DESC']);
         $recipeOfTheWeek = $allRecipes[0] ?? null;
         $featuredRecipes = array_slice($allRecipes, 0, 6);
 

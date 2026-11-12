@@ -23,8 +23,8 @@
         {% if is_granted('ROLE_ADMIN') %}
             <a href="{{ path('admin_dashboard') }}" class="admin-nav-pill" title="Admin dashboard">⚡ Admin</a>
         {% endif %}
-        {% if is_granted('ROLE_MODERATOR') and not is_granted('ROLE_ADMIN') %}
-            <a href="{{ path('moderator_dashboard') }}" class="admin-nav-pill" title="Moderation dashboard">🛡️ Moderator</a>
+        {% if is_granted('ROLE_STAFF') and not is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('staff_dashboard') }}" class="admin-nav-pill" title="Staff dashboard">🛡️ Staff</a>
         {% endif %}
         {% if app.user %}
             <div class="user-menu">

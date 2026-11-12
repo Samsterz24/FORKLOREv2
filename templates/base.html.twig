@@ -17,5 +17,50 @@
     </head>
     <body>
         {% block body %}{% endblock %}
+
+        {% if app.user %}
+        <div id="banned-live-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);align-items:center;justify-content:center;z-index:10000;">
+            <div role="dialog" aria-modal="true" aria-labelledby="banned-live-title" style="background:#fff;max-width:420px;width:90%;border-radius:12px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.25);text-align:center;">
+                <h3 id="banned-live-title" style="margin:0 0 8px;color:#c0392b;">Account Banned</h3>
+                <p style="margin:0 0 16px;">Your account has been banned. You will be signed out.</p>
+                <button type="button" id="banned-live-ok" class="primary-btn">OK</button>
+            </div>
+        </div>
+        <script>
+            (function () {
+                var checking = false;
+                var handled = false;
+                function showBannedModal() {
+                    if (handled) return;
+                    handled = true;
+                    var modal = document.getElementById('banned-live-modal');
+                    if (modal) {
+                        modal.style.display = 'flex';
+                        var ok = document.getElementById('banned-live-ok');
+                        if (ok) ok.addEventListener('click', function () { window.location.href = '{{ path('login', { banned: 1 }) }}'; });
+                    } else {
+                        window.location.href = '{{ path('login', { banned: 1 }) }}';
+                    }
+                    setTimeout(function () { window.location.href = '{{ path('login', { banned: 1 }) }}'; }, 2500);
+                }
+                function checkStatus() {
+                    if (checking || handled) return;
+                    checking = true;
+                    fetch('{{ path('session_status') }}', { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }, credentials: 'same-origin' })
+                        .then(function (r) { return r.ok ? r.json() : null; })
+                        .then(function (data) {
+                            if (data && data.banned) {
+                                showBannedModal();
+                            }
+                        })
+                        .catch(function () {})
+                        .finally(function () { checking = false; });
+                }
+                setInterval(checkStatus, 15000);
+                document.addEventListener('visibilitychange', function () { if (!document.hidden) checkStatus(); });
+                window.addEventListener('focus', checkStatus);
+            })();
+        </script>
+        {% endif %}
     </body>
 </html>

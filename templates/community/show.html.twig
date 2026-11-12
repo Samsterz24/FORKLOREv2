@@ -21,7 +21,7 @@
                 {% set author = post.user ? post.user.username : 'Unknown' %}
                 <div class="post-hero-avatar">{{ author|slice(0, 1)|upper }}</div>
                 <div class="post-hero-byline">
-                    <strong>{{ author }}</strong>
+                    {% if post.user %}<a href="{{ path('profile_show', { username: post.user.username }) }}"><strong>{{ author }}</strong></a>{% else %}<strong>{{ author }}</strong>{% endif %}
                     <span>{{ post.createdAt|date('F j, Y \\a\\t g:i A') }}</span>
                 </div>
                 <span class="cat-badge post-hero-category">{{ post.category }}</span>
@@ -30,35 +30,64 @@
             <h1>{{ post.title }}</h1>
 
             <div class="post-hero-content">
-                {{ post.content }}
+                {{ post.content|nl2br }}
             </div>
         </div>
+
+        {% if error %}
+            <div class="support-inline-alert support-inline-alert--error" role="alert">{{ error }}</div>
+        {% endif %}
 
         <section class="replies-section" id="replies">
             <h2 class="replies-section-header">
                 Replies
-                <span class="reply-total">0</span>
+                <span class="reply-total">{{ replies|length }}</span>
             </h2>
-            <div class="no-replies">
-                No replies yet &mdash; be the first to join the conversation!
-            </div>
+            {% if replies is empty %}
+                <div class="no-replies">
+                    No replies yet &mdash; be the first to join the conversation!
+                </div>
+            {% else %}
+                <div class="reply-list">
+                    {% for reply in replies %}
+                        {% set replyAuthor = reply.user ? reply.user.username : 'Unknown' %}
+                        <article class="reply-card">
+                            <div class="reply-card-top">
+                                <div class="reply-avatar">{{ replyAuthor|slice(0, 1)|upper }}</div>
+                                {% if reply.user %}
+                                    <a href="{{ path('profile_show', { username: reply.user.username }) }}" class="reply-author">{{ replyAuthor }}</a>
+                                {% else %}
+                                    <span class="reply-author">{{ replyAuthor }}</span>
+                                {% endif %}
+                                <span class="reply-date">{{ reply.createdAt|date('M j, Y g:i A') }}</span>
+                            </div>
+                            <div class="reply-text">{{ reply.comment|nl2br }}</div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </section>
 
         <div class="reply-form-box">
             <h2>Leave a Reply</h2>
-            <form method="post" action="{{ path('community_show', { id: post.id }) }}">
-                <div class="form-group">
-                    <label for="comment">Your Reply</label>
-                    <textarea
-                        id="comment"
-                        name="comment"
-                        rows="5"
-                        placeholder="Share your thoughts, answer the question, or add to the discussion…"
-                        required
-                    ></textarea>
-                </div>
-                <button type="submit" class="reply-submit-btn">Post Reply &rarr;</button>
-            </form>
+            {% if app.user %}
+                <form method="post" action="{{ path('community_show', { id: post.id }) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('community_reply_' ~ post.id) }}">
+                    <div class="form-group">
+                        <label for="comment">Your Reply</label>
+                        <textarea
+                            id="comment"
+                            name="comment"
+                            rows="5"
+                            placeholder="Share your thoughts, answer the question, or add to the discussion…"
+                            required
+                        ></textarea>
+                    </div>
+                    <button type="submit" class="reply-submit-btn">Post Reply &rarr;</button>
+                </form>
+            {% else %}
+                <p>Please <a href="{{ path('login') }}">log in</a> to reply to this thread.</p>
+            {% endif %}
         </div>
     </main>
     {% else %}

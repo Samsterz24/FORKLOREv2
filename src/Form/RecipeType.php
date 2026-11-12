@@ -33,6 +33,7 @@ class RecipeType extends AbstractType
                 'placeholder' => 'Select a cuisine',
             ])
             ->add('ingredients', TextareaType::class, ['required' => false])
+            ->add('instructions', TextareaType::class, ['required' => false])
             ->add('recipe_image', FileType::class, [
                 'label' => 'Recipe Image',
                 'mapped' => false,

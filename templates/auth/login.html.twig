@@ -8,9 +8,24 @@
 
 {% block content %}
     <main class="auth-container">
+        {% if bannedNotice or (error and error.messageKey is defined and error.messageKey == 'Your account has been banned.') or (error and error.message is defined and 'banned' in error.message|lower) %}
+            <div id="banned-modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:9999;">
+                <div role="dialog" aria-modal="true" aria-labelledby="banned-title" style="background:#fff;max-width:420px;width:90%;border-radius:12px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.25);text-align:center;">
+                    <h3 id="banned-title" style="margin:0 0 8px;color:#c0392b;">Account Banned</h3>
+                    <p style="margin:0 0 16px;">Your account has been banned. If you believe this is a mistake, please contact support.</p>
+                    <button type="button" onclick="document.getElementById('banned-modal-overlay').style.display='none'" class="primary-btn">OK</button>
+                </div>
+            </div>
+        {% endif %}
         <div class="auth-card">
             <h2>Login to ForkLore</h2>
             <p class="auth-subtitle">Welcome back! Sign in to continue sharing recipes.</p>
+
+            {% if error %}
+                <div class="support-inline-alert support-inline-alert--error" role="alert" style="margin-bottom:12px;">
+                    {{ error.messageKey == 'Your account has been banned.' ? 'Your account has been banned. You cannot sign in.' : error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
 
             <form action="{{ path('login') }}" method="post" class="auth-form">
                 <div class="form-group">

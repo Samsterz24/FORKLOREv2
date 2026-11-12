@@ -9,35 +9,38 @@
 {% block content %}
     {% if profile %}
     <main class="profile-page-wrapper">
+        {% if notice %}<div class="support-inline-alert support-inline-alert--success" role="status">{{ notice }}</div>{% endif %}
+        {% if error %}<div class="support-inline-alert support-inline-alert--error" role="alert">{{ error }}</div>{% endif %}
         <div class="profile-card">
             <div class="profile-avatar-box">{{ profile.initial }}</div>
 
             <div class="profile-details">
                 <div class="profile-user-header">
                     <h1 class="profile-username">{{ profile.username }}</h1>
-                    <span class="role-badge {{ profile.role == 'admin' ? 'admin' : 'user' }}">
-                        {{ profile.role|upper }}
+                    <span class="role-badge {{ profile.role == 'ROLE_ADMIN' ? 'admin' : (profile.role == 'ROLE_STAFF' ? 'mod' : 'user') }}">
+                        {{ profile.role == 'ROLE_ADMIN' ? 'ADMIN' : (profile.role == 'ROLE_STAFF' ? 'STAFF' : 'USER') }}
                     </span>
                     {% if profile.hasFoodieStamp %}
                         <span class="foodie-badge">🏅 Foodie Stamp</span>
                     {% endif %}
                     {% if profile.status == 'banned' %}
-                        <span class="foodie-badge">BANNED</span>
+                        <span class="foodie-badge" style="background:#c0392b;color:#fff;">BANNED</span>
                     {% endif %}
                 </div>
 
                 <p class="profile-join-date">
                     Member since {{ profile.joined|date('F Y') }}
-                    {% if profile.hasFoodieStamp and profile.stampExpires %}
+                    {% if isOwner and profile.hasFoodieStamp and profile.stampExpires %}
                         <span class="stamp-active"> • Foodie Stamp active until {{ profile.stampExpires }}</span>
                     {% endif %}
                 </p>
 
                 <div class="profile-bio" id="bio-display">
-                    {{ profile.bio|nl2br }}
+                    {{ profile.bio ? profile.bio|nl2br : (isOwner ? 'Tell the community about your culinary roots...' : 'No bio yet.') }}
                 </div>
 
-                <form method="post" action="{{ path('profile') }}" class="profile-bio-form" id="bio-form">
+                {% if isOwner %}
+                <form method="post" action="{{ path('profile') }}" class="profile-bio-form" id="bio-form" style="display:none;">
                     <input type="hidden" name="update_profile" value="1">
                     <label class="visually-hidden" for="profile-bio-input">Your bio</label>
                     <textarea id="profile-bio-input" name="bio" rows="3" placeholder="Tell the community about your culinary roots...">{{ profile.bio }}</textarea>
@@ -46,17 +49,21 @@
                         <button type="button" class="btn-edit-bio" onclick="toggleBioForm(false)">Cancel</button>
                     </div>
                 </form>
+                {% endif %}
 
                 <div class="profile-stats-strip">
                     <span class="stat-item"><strong>{{ uploadedRecipes|length }}</strong> Recipes</span>
-                    <span class="stat-item"><strong>{{ savedRecipes|length }}</strong> Saved</span>
+                    {% if isOwner %}<span class="stat-item"><strong>{{ savedRecipes|length }}</strong> Saved Recipes</span>{% endif %}
                     <span class="stat-item"><strong>{{ submittedStories|length }}</strong> Stories</span>
                 </div>
             </div>
 
+            {% if isOwner %}
             <div class="profile-actions-bar">
-                {% if profile.role == 'admin' %}
+                {% if is_granted('ROLE_ADMIN') %}
                     <a href="{{ path('admin_dashboard') }}" class="admin-nav-pill">⚡ Admin Dashboard &rarr;</a>
+                {% elseif is_granted('ROLE_STAFF') %}
+                    <a href="{{ path('staff_dashboard') }}" class="admin-nav-pill">⚡ Staff Dashboard &rarr;</a>
                 {% endif %}
 
                 <a href="{{ path('subscriptions_index') }}" class="foodie-stamp-btn">
@@ -65,6 +72,7 @@
 
                 <button type="button" class="btn-edit-bio" onclick="toggleBioForm(true)">✎ Edit Bio</button>
             </div>
+            {% endif %}
         </div>
 
         <div class="ai-sous-chef-teaser">
@@ -92,14 +100,16 @@
         </div>
 
         <div class="profile-nav-tabs">
-            <a href="{{ path('profile', { tab: 'recipes' }) }}" class="profile-tab-btn {{ tab == 'recipes' ? 'active' : '' }}">
+            <a href="{{ path(isOwner ? 'profile' : 'profile_show', isOwner ? { tab: 'recipes' } : { username: profile.username, tab: 'recipes' }) }}" class="profile-tab-btn {{ tab == 'recipes' ? 'active' : '' }}">
                 📖 Uploaded Recipes <span class="tab-badge-count">{{ uploadedRecipes|length }}</span>
             </a>
+            {% if isOwner %}
             <a href="{{ path('profile', { tab: 'saved' }) }}" class="profile-tab-btn {{ tab == 'saved' ? 'active' : '' }}">
-                ♥ Saved / Liked Recipes <span class="tab-badge-count">{{ savedRecipes|length }}</span>
+                ♥ Saved / Liked <span class="tab-badge-count">{{ savedRecipes|length }}</span>
             </a>
-            <a href="{{ path('profile', { tab: 'stories' }) }}" class="profile-tab-btn {{ tab == 'stories' ? 'active' : '' }}">
-                ✍️ Submitted Stories <span class="tab-badge-count">{{ submittedStories|length }}</span>
+            {% endif %}
+            <a href="{{ path(isOwner ? 'profile' : 'profile_show', isOwner ? { tab: 'stories' } : { username: profile.username, tab: 'stories' }) }}" class="profile-tab-btn {{ tab == 'stories' ? 'active' : '' }}">
+                ✍️ Stories <span class="tab-badge-count">{{ submittedStories|length }}</span>
             </a>
         </div>
 
@@ -134,13 +144,20 @@
                                     </div>
                                 </div>
                             </a>
+                            {% if isOwner %}
                             <div class="card-owner-actions">
                                 <a href="{{ path('recipes_edit', { id: recipe.id }) }}" class="card-edit-link">✏️ Edit</a>
+                                <form method="post" action="{{ path('profile_recipe_visibility', { id: recipe.id }) }}" style="display:inline;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('recipe_visibility_' ~ recipe.id) }}">
+                                    <button type="submit" class="card-edit-link">{{ recipe.isPublic ? 'Make Private' : 'Make Public' }}</button>
+                                </form>
                                 <form method="post" action="{{ path('recipes_delete', { id: recipe.id }) }}" onsubmit="return confirm('Are you sure you want to delete this recipe? This action cannot be undone.');" style="display:inline;">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_recipe_' ~ recipe.id) }}">
                                     <button type="submit" class="card-delete-btn">🗑️ Delete</button>
                                 </form>
+                                <span class="badge">{{ recipe.isPublic ? 'Public' : 'Private' }}</span>
                             </div>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>
@@ -164,12 +181,10 @@
                             <div class="card-body">
                                 <div class="card-meta">
                                     <span class="badge">{{ recipe.category }}</span>
-                                    {% if recipe.cuisine %}
-                                        <span class="badge badge-cuisine">{{ recipe.cuisine.name }}</span>
-                                    {% endif %}
+                                    {% if recipe.cuisine %}<span class="badge badge-cuisine">{{ recipe.cuisine.name }}</span>{% endif %}
                                 </div>
                                 <h3 class="card-title">{{ recipe.title }}</h3>
-                                <p class="card-author">By {{ recipe.user.username }}</p>
+                                <p class="card-author">By {{ recipe.user ? recipe.user.username : 'Unknown' }}</p>
                                 <div class="card-footer">
                                     <span>♥ {{ recipe.totalLikes }} favorites</span>
                                     <span>{{ recipe.createdAt|date('M d, Y') }}</span>
@@ -177,6 +192,22 @@
                             </div>
                         </a>
                     {% endfor %}
+                    {% if savedStories is defined and savedStories is not empty %}
+                        <h3 style="grid-column:1/-1;margin-top:16px;">Saved Stories (private)</h3>
+                        {% for story in savedStories %}
+                            <a href="{{ path('stories_show', { id: story.id }) }}" class="content-card">
+                                <div class="card-img-wrap">
+                                    {% set simg = story.imageFilename|default('default.svg') %}
+                                    <img src="{{ asset('uploads/stories/' ~ (simg in ['default.jpg','default'] ? 'default.svg' : simg)) }}" alt="{{ story.title }}">
+                                </div>
+                                <div class="card-body">
+                                    <div class="card-meta"><span class="badge badge-story">Saved Story</span></div>
+                                    <h3 class="card-title">{{ story.title }}</h3>
+                                    <div class="card-footer"><span>♥ {{ story.savesCount }} saves</span></div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    {% endif %}
                 </div>
             {% endif %}
         {% elseif tab == 'stories' %}
@@ -192,21 +223,20 @@
                     {% for story in submittedStories %}
                         <a href="{{ path('stories_show', { id: story.id }) }}" class="content-card">
                             <div class="card-img-wrap">
-                                <img src="{{ asset('images/' ~ story.imageFilename) }}" alt="{{ story.title }}">
+                                {% set simg = story.imageFilename|default('default.svg') %}
+                                <img src="{{ asset('uploads/stories/' ~ (simg in ['default.jpg','default'] ? 'default.svg' : simg)) }}" alt="{{ story.title }}">
                             </div>
                             <div class="card-body">
                                 <div class="card-meta">
                                     <span class="badge badge-story">Story</span>
-                                    {% if story.location %}
-                                        <span class="badge badge-cuisine">{{ story.location }}</span>
-                                    {% endif %}
+                                    {% if story.location %}<span class="badge badge-cuisine">{{ story.location }}</span>{% endif %}
                                 </div>
                                 <h3 class="card-title">{{ story.title }}</h3>
                                 {% if story.quote %}
                                     <p class="card-snippet">"{{ story.quote|slice(0, 110) }}{% if story.quote|length > 110 %}...{% endif %}"</p>
                                 {% endif %}
                                 <div class="card-footer">
-                                    <span>Saved {{ story.savesCount }} times</span>
+                                    <span>♥ {{ story.savesCount }} saves</span>
                                     <span>{{ story.createdAt|date('M d, Y') }}</span>
                                 </div>
                             </div>

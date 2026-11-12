@@ -1,0 +1,266 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Staff Dashboard - ForkLore{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="staff-dashboard" id="staff-dashboard" data-data-url="{{ path('staff_dashboard_data') }}">
+    <header class="staff-header">
+        <h1>Staff Dashboard</h1>
+        <p>Separate staff area for bans, support, and user warnings. Staff do not have access to the admin dashboard.</p>
+    </header>
+
+    <div class="staff-inline-alerts">
+        <div id="staff-notice" class="support-inline-alert support-inline-alert--success" role="status" style="{{ notice ? '' : 'display:none;' }}">{{ notice }}</div>
+        <div id="staff-error" class="support-inline-alert support-inline-alert--error" role="alert" style="{{ error ? '' : 'display:none;' }}">{{ error }}</div>
+    </div>
+
+    <div class="staff-grid">
+        <section class="staff-card">
+            <div class="staff-card-header">
+                <h2>Support Desk</h2>
+                <span class="staff-muted">Open/in-progress: <strong id="staff-open-tickets">{{ openTickets }}</strong></span>
+            </div>
+            <p class="staff-muted" style="margin:0 0 8px;">Auto-updates periodically while this tab is visible.</p>
+            <div class="staff-actions">
+                <a href="{{ path('staff_support') }}" class="primary-btn">Open Staff Support Desk</a>
+                <a href="{{ path('contact') }}" class="primary-btn">Contact Admin</a>
+            </div>
+            <ul id="staff-recent-tickets" class="staff-ticket-list">
+                {% for t in recentTickets %}
+                    <li data-ticket-id="{{ t.id }}">
+                        <a href="{{ path('staff_support', { ticket_id: t.id }) }}">#{{ t.id }} {{ t.subject }}</a>
+                        <span class="staff-status-pill ticket-status">{{ t.status|replace({'_':' '}) }}</span>
+                        <span class="staff-muted">({{ t.user.username }})</span>
+                    </li>
+                {% else %}
+                    <li>No tickets yet.</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section class="staff-card">
+            <h2>Issue Warning Report</h2>
+            <form method="post" id="staff-warn-form" class="staff-form-grid">
+                <input type="hidden" name="action" value="warn_user">
+                <input type="hidden" name="_token" value="{{ csrf_token('staff_warn_user') }}">
+                <div class="staff-field">
+                    <label for="warn-target-user">Target user</label>
+                    <select name="target_user_id" id="warn-target-user" required>
+                        <option value="">Select user</option>
+                        {% for u in users %}
+                            <option value="{{ u.id }}">{{ u.username }} ({{ u.email }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="staff-field">
+                    <label for="warn-reason">Reason</label>
+                    <textarea name="reason" id="warn-reason" rows="4" required placeholder="Describe the reason for this warning..."></textarea>
+                </div>
+                <div>
+                    <button type="submit" class="primary-btn">Record Warning</button>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <section class="staff-card">
+        <div class="staff-card-header">
+            <h2>Ban / Unban Users</h2>
+            <span class="staff-muted">Manage user access (admins cannot be banned)</span>
+        </div>
+        <div class="admin-table-responsive">
+            <table class="admin-table" style="width:100%;border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="staff-users-body">
+                {% for u in users %}
+                    {% set isAdminUser = u.role == 'ROLE_ADMIN' %}
+                    <tr data-user-id="{{ u.id }}" class="{{ isAdminUser ? 'staff-user-row--admin' : '' }}">
+                        <td><a href="{{ path('profile_show', { username: u.username }) }}">{{ u.username }}</a></td>
+                        <td>{{ u.email }}</td>
+                        <td class="user-role">{{ u.role }}</td>
+                        <td class="user-status">{{ u.status }}</td>
+                        <td>
+                            <form method="post" class="staff-ban-form" style="display:inline;">
+                                <input type="hidden" name="action" value="toggle_ban">
+                                <input type="hidden" name="user_id" value="{{ u.id }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('staff_toggle_ban_' ~ u.id) }}">
+                                <button type="submit" class="admin-btn {{ u.banned ? 'admin-btn-unban' : 'admin-btn-ban' }}" {{ (u.id == app.user.id or isAdminUser) ? 'disabled' : '' }} title="{{ isAdminUser ? 'Admins cannot be banned' : '' }}">{{ u.banned ? 'Unban' : 'Ban' }}</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="staff-card">
+        <div class="staff-card-header">
+            <h2>Warning Records</h2>
+            <span class="staff-muted">Visible to admins</span>
+        </div>
+        <ul id="staff-warnings-list" class="staff-warning-list">
+            {% for w in recentWarnings %}
+                <li>
+                    <strong><a href="{{ path('profile_show', { username: w.targetUser.username }) }}">{{ w.targetUser.username }}</a></strong>
+                    warned by {{ w.staff.username }} on {{ w.createdAt|date('M d, Y H:i') }} — {{ w.reason|e }}
+                </li>
+            {% else %}
+                <li>No warnings recorded yet.</li>
+            {% endfor %}
+        </ul>
+    </section>
+</main>
+
+<script>
+(function () {
+    var root = document.getElementById('staff-dashboard');
+    if (!root) return;
+    var dataUrl = root.getAttribute('data-data-url');
+    var noticeEl = document.getElementById('staff-notice');
+    var errorEl = document.getElementById('staff-error');
+
+    function showMsg(el, msg) {
+        if (!el) return;
+        if (msg) { el.textContent = msg; el.style.display = ''; }
+        else { el.textContent = ''; el.style.display = 'none'; }
+    }
+    function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    window.__staffBanTokens = window.__staffBanTokens || {};
+    {% for u in users %}
+    window.__staffBanTokens[{{ u.id }}] = '{{ csrf_token('staff_toggle_ban_' ~ u.id)|e('js') }}';
+    {% endfor %}
+
+    function bindBanForms() {
+        document.querySelectorAll('.staff-ban-form').forEach(function (form) {
+            if (form.__bound) return;
+            form.__bound = true;
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                showMsg(errorEl, ''); showMsg(noticeEl, '');
+                var fd = new FormData(form);
+                fetch('{{ path('staff_dashboard') }}', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }, body: fd, credentials: 'same-origin' })
+                    .then(function (r) { return r.json().catch(function(){ return null; }); })
+                    .then(function (data) {
+                        if (data && data.ok) { showMsg(noticeEl, data.notice || 'Updated.'); refresh(); }
+                        else if (data && data.error) { showMsg(errorEl, data.error); }
+                        else { form.submit(); }
+                    }).catch(function () { form.submit(); });
+            });
+        });
+    }
+
+    function renderData(data) {
+        if (!data) return;
+        var open = document.getElementById('staff-open-tickets');
+        if (open && typeof data.openTickets !== 'undefined') open.textContent = data.openTickets;
+
+        if (Array.isArray(data.recentTickets)) {
+            var ul = document.getElementById('staff-recent-tickets');
+            if (ul) {
+                ul.className = 'staff-ticket-list';
+                if (data.recentTickets.length === 0) {
+                    ul.innerHTML = '<li>No tickets yet.</li>';
+                } else {
+                    ul.innerHTML = data.recentTickets.map(function (t) {
+                        var href = '{{ path('staff_support') }}?ticket_id=' + t.id;
+                        return '<li><a href="' + href + '">#' + t.id + ' ' + escapeHtml(t.subject) + '</a> ' +
+                            '<span class="staff-status-pill ticket-status">' + escapeHtml(String(t.status||'').replace(/_/g,' ')) + '</span> ' +
+                            '<span class="staff-muted">(' + escapeHtml(t.user||'') + ')</span></li>';
+                    }).join('');
+                }
+            }
+        }
+
+        if (Array.isArray(data.users)) {
+            var tbody = document.getElementById('staff-users-body');
+            if (tbody) {
+                var currentId = {{ app.user.id|default(0) }};
+                tbody.innerHTML = data.users.map(function (u) {
+                    window.__staffBanTokens[u.id] = window.__staffBanTokens[u.id] || '';
+                    var isAdmin = u.role === 'ROLE_ADMIN';
+                    var btnClass = u.banned ? 'admin-btn-unban' : 'admin-btn-ban';
+                    var btnText = u.banned ? 'Unban' : 'Ban';
+                    var disabled = (u.id === currentId || isAdmin) ? ' disabled' : '';
+                    var title = isAdmin ? ' title="Admins cannot be banned"' : '';
+                    var rowClass = isAdmin ? ' class="staff-user-row--admin"' : '';
+                    var profileHref = '{{ path('profile_show', { username: '__U__' }) }}'.replace('__U__', encodeURIComponent(u.username));
+                    return '<tr data-user-id="' + u.id + '"' + rowClass + '>' +
+                        '<td><a href="' + profileHref + '">' + escapeHtml(u.username) + '</a></td>' +
+                        '<td>' + escapeHtml(u.email || '') + '</td>' +
+                        '<td class="user-role">' + escapeHtml(u.role || '') + '</td>' +
+                        '<td class="user-status">' + escapeHtml(u.status || '') + '</td>' +
+                        '<td><form method="post" class="staff-ban-form" style="display:inline;" data-user-id="' + u.id + '">' +
+                        '<input type="hidden" name="action" value="toggle_ban">' +
+                        '<input type="hidden" name="user_id" value="' + u.id + '">' +
+                        '<input type="hidden" name="_token" value="' + (window.__staffBanTokens[u.id] || '') + '">' +
+                        '<button type="submit" class="admin-btn ' + btnClass + '"' + disabled + title + '>' + btnText + '</button>' +
+                        '</form></td></tr>';
+                }).join('');
+                bindBanForms();
+            }
+        }
+
+        if (Array.isArray(data.recentWarnings)) {
+            var wul = document.getElementById('staff-warnings-list');
+            if (wul) {
+                wul.className = 'staff-warning-list';
+                if (data.recentWarnings.length === 0) {
+                    wul.innerHTML = '<li>No warnings recorded yet.</li>';
+                } else {
+                    wul.innerHTML = data.recentWarnings.map(function (w) {
+                        var profileHref = '{{ path('profile_show', { username: '__U__' }) }}'.replace('__U__', encodeURIComponent(w.targetUsername || w.target || ''));
+                        return '<li><strong><a href="' + profileHref + '">' + escapeHtml(w.target || '') + '</a></strong> warned by ' + escapeHtml(w.staff || '') + ' on ' + escapeHtml(w.createdAt || '') + ' — ' + escapeHtml(w.reason || '') + '</li>';
+                    }).join('');
+                }
+            }
+        }
+    }
+
+    function refresh() {
+        if (document.hidden) return;
+        fetch(dataUrl, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(renderData)
+            .catch(function () {});
+    }
+
+    var warnForm = document.getElementById('staff-warn-form');
+    if (warnForm) {
+        warnForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            showMsg(errorEl, ''); showMsg(noticeEl, '');
+            var fd = new FormData(warnForm);
+            fetch('{{ path('staff_dashboard') }}', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }, body: fd, credentials: 'same-origin' })
+                .then(function (r) { return r.json().catch(function(){ return null; }); })
+                .then(function (data) {
+                    if (data && data.ok) {
+                        showMsg(noticeEl, data.notice || 'Warning recorded.');
+                        var reason = document.getElementById('warn-reason'); if (reason) reason.value = '';
+                        refresh();
+                    } else if (data && data.error) { showMsg(errorEl, data.error); }
+                    else { warnForm.submit(); }
+                }).catch(function () { warnForm.submit(); });
+        });
+    }
+
+    bindBanForms();
+    setInterval(refresh, 25000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) refresh(); });
+    window.addEventListener('focus', refresh);
+})();
+</script>
+{% endblock %}

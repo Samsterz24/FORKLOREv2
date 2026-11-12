@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
 use Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator;
 
@@ -23,15 +24,21 @@ final class AuthController extends AbstractController
     ) {}
 
     #[Route('/login', name: 'login', methods: ['GET', 'POST'])]
-    public function login(Request $request): Response
+    public function login(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
         if ($this->getUser()) {
             return $this->redirectToRoute('home');
         }
 
+        $error = $authenticationUtils->getLastAuthenticationError();
+        $lastUsername = $authenticationUtils->getLastUsername();
+        $bannedNotice = $request->query->get('banned') === '1';
+
         return $this->render('auth/login.html.twig', [
             'notice' => null,
-            'submittedUsername' => '',
+            'submittedUsername' => $lastUsername ?: '',
+            'error' => $error,
+            'bannedNotice' => $bannedNotice,
         ]);
     }
 
@@ -78,5 +85,28 @@ final class AuthController extends AbstractController
     public function logout(): Response
     {
         return $this->redirectToRoute('home');
+    }
+
+    #[Route('/session/status', name: 'session_status', methods: ['GET'])]
+    public function sessionStatus(Request $request): Response
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->json(['authenticated' => false, 'banned' => false]);
+        }
+
+        // Refresh from DB to detect ban changes during active session
+        $fresh = $this->em->getRepository(User::class)->find($user->getId());
+        if (!$fresh || $fresh->isBanned()) {
+            // Force logout server-side
+            $this->container->get('security.token_storage')->setToken(null);
+            if ($request->hasSession()) {
+                $session = $request->getSession();
+                $session->invalidate();
+            }
+            return $this->json(['authenticated' => false, 'banned' => true]);
+        }
+
+        return $this->json(['authenticated' => true, 'banned' => false]);
     }
 }

@@ -30,6 +30,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 50)]
     private string $role = 'ROLE_USER';
 
+    #[ORM\Column(length: 20)]
+    private string $status = 'active';
+
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $bio = null;
 
@@ -64,6 +67,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setAge(?int $age): self { $this->age = $age; return $this; }
     public function getRole(): string { return $this->role; }
     public function setRole(string $role): self { $this->role = $role; return $this; }
+    public function getStatus(): string { return $this->status; }
+    public function setStatus(string $status): self { $this->status = $status; return $this; }
+    public function isBanned(): bool { return $this->status === 'banned'; }
+    public function isStaff(): bool { return $this->role === 'ROLE_STAFF'; }
     public function getBio(): ?string { return $this->bio; }
     public function setBio(?string $bio): self { $this->bio = $bio; return $this; }
     public function getAvatar(): ?string { return $this->avatar; }
@@ -76,7 +83,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsVerifiedChef(bool $v): self { $this->isVerifiedChef = $v; return $this; }
     public function getInitial(): string { return strtoupper(substr($this->username, 0, 1)); }
     public function getJoined(): \DateTimeImmutable { return $this->createdAt; }
-    public function getStatus(): string { return 'active'; }
     public function getStampExpires(): ?string { return $this->stampExpiresAt?->format('M j, Y'); }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
 

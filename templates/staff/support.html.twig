@@ -1,0 +1,202 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Staff - Support Desk | ForkLore{% endblock %}
+
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="staff-support-page" style="max-width:1200px;margin:0 auto;padding:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div>
+            <h1 style="margin:0;">Staff Support Desk</h1>
+            <p style="margin:4px 0 0;color:#666;">Separate staff support area. Handle member tickets and update statuses.</p>
+        </div>
+        <div>
+            <a href="{{ path('staff_dashboard') }}" class="admin-btn">← Staff Dashboard</a>
+            <a href="{{ path('contact') }}" class="admin-btn" style="margin-left:8px;">Contact Admin</a>
+        </div>
+    </div>
+
+    {% if notice %}<div class="admin-alert admin-alert-success" role="status" style="margin-top:12px;">✓ {{ notice }}</div>{% endif %}
+    {% if error %}<div class="admin-alert admin-alert-error" role="alert" style="margin-top:12px;">{{ error }}</div>{% endif %}
+
+    <div class="admin-chat-container" style="margin-top:16px;">
+        <aside class="admin-tickets-column" aria-label="Support tickets">
+            <div class="admin-tickets-filter-bar">
+                <h2>
+                    <span>Support Tickets</span>
+                    <span class="admin-tickets-total">{{ tickets|length }} total</span>
+                </h2>
+                <div class="admin-filter-tabs">
+                    <a href="{{ path('staff_support', { status: 'all' }) }}" class="{{ status == 'all' ? 'active' : '' }}">All</a>
+                    <a href="{{ path('staff_support', { status: 'open' }) }}" class="{{ status == 'open' ? 'active' : '' }}">Open</a>
+                    <a href="{{ path('staff_support', { status: 'in_progress' }) }}" class="{{ status == 'in_progress' ? 'active' : '' }}">In Progress</a>
+                    <a href="{{ path('staff_support', { status: 'closed' }) }}" class="{{ status == 'closed' ? 'active' : '' }}">Closed</a>
+                </div>
+            </div>
+
+            <div class="admin-tickets-list">
+                {% for ticket in tickets %}
+                    <a href="{{ path('staff_support', { ticket_id: ticket.id, status: status }) }}"
+                       class="admin-ticket-item {{ ticket.id == selectedTicketId ? 'active' : '' }}">
+                        <div class="admin-ticket-item-top">
+                            <span class="admin-ticket-sender">{{ ticket.user }}</span>
+                            <span class="admin-ticket-time">{{ ticket.createdAt|date('M d') }}</span>
+                        </div>
+                        <div class="admin-ticket-subject">{{ ticket.subject }}</div>
+                        <div class="admin-ticket-item-bottom">
+                            <span class="admin-ticket-preview">{{ ticket.lastMessage|length > 32 ? ticket.lastMessage|slice(0, 32) ~ '...' : (ticket.lastMessage ?: 'No messages') }}</span>
+                            <span class="admin-badge admin-badge-{{ ticket.status }}">{{ ticket.status|replace({ '_': ' ' }) }}</span>
+                        </div>
+                    </a>
+                {% else %}
+                    <div class="admin-empty-inline admin-empty-inline--pad">No support tickets found in this category.</div>
+                {% endfor %}
+            </div>
+        </aside>
+
+        <section class="admin-thread-column" aria-label="Active ticket">
+            {% if activeTicket %}
+                <div class="admin-thread-header">
+                    <div class="admin-thread-user-info">
+                        <h3>{{ activeTicket.subject }}</h3>
+                        <p>From: <strong><a href="{{ path('profile_show', { username: activeTicket.user }) }}">{{ activeTicket.user }}</a></strong> ({{ activeTicket.email }}) &bull; Opened {{ activeTicket.createdAt|date('M d, Y H:i') }}</p>
+                    </div>
+                    <div class="admin-thread-actions">
+                        <form method="post" action="{{ path('staff_support', { status: status, ticket_id: activeTicket.id }) }}" class="admin-status-form" id="staff-status-form">
+                            <input type="hidden" name="action" value="update_status">
+                            <input type="hidden" name="ticket_id" value="{{ activeTicket.id }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('staff_support_status_' ~ activeTicket.id) }}">
+                            <label class="visually-hidden" for="ticket-status">Ticket status</label>
+                            <select name="status" id="ticket-status" class="admin-status-select">
+                                <option value="open" {{ activeTicket.status == 'open' ? 'selected' : '' }}>Open</option>
+                                <option value="in_progress" {{ activeTicket.status == 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                                <option value="closed" {{ activeTicket.status == 'closed' ? 'selected' : '' }}>Closed</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="admin-messages-stream" id="staff-messages-container" data-ticket-id="{{ activeTicket.id }}" data-last-id="{{ ticketMessages|last ? ticketMessages|last.id : 0 }}">
+                    {% for message in ticketMessages %}
+                        <div class="admin-message-bubble {{ message.isAdmin ? 'admin-message-admin' : 'admin-message-user' }}" data-message-id="{{ message.id }}">
+                            <div class="admin-message-header">
+                                <span>{% if message.isAdmin %}🛡️ Staff ({{ message.sender }}){% else %}{{ message.sender }}{% endif %}</span>
+                                <span>{{ message.createdAt|date('M d, H:i') }}</span>
+                            </div>
+                            <div class="admin-message-text">{{ message.message|nl2br }}</div>
+                        </div>
+                    {% else %}
+                        <p class="admin-empty-inline" id="staff-empty-messages">No messages in this thread yet.</p>
+                    {% endfor %}
+                </div>
+
+                <div class="admin-reply-box-wrap">
+                    {% if activeTicket.status == 'closed' %}
+                        <div class="admin-ticket-closed-notice" id="staff-closed-notice">This ticket is closed. Change its status to send a reply.</div>
+                    {% else %}
+                        <form method="post" action="{{ path('staff_support', { status: status, ticket_id: activeTicket.id }) }}" class="admin-reply-form" id="staff-reply-form">
+                            <input type="hidden" name="action" value="send_reply">
+                            <input type="hidden" name="ticket_id" value="{{ activeTicket.id }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('staff_support_reply_' ~ activeTicket.id) }}">
+                            <label class="visually-hidden" for="staff-reply-message">Reply to member</label>
+                            <textarea id="staff-reply-message" name="message" class="admin-reply-textarea" placeholder="Write a helpful response to {{ activeTicket.user }}..." required></textarea>
+                            <button type="submit" class="admin-btn admin-btn-send">Reply &rarr;</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="admin-empty-thread">
+                    <div class="admin-empty-thread-icon" aria-hidden="true">💬</div>
+                    <h3>Select a Ticket</h3>
+                    <p>Choose a ticket from the left panel to inspect the conversation and send replies.</p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</main>
+
+<script>
+(function () {
+    var container = document.getElementById('staff-messages-container');
+    if (!container) return;
+    var ticketId = container.getAttribute('data-ticket-id');
+    if (!ticketId) return;
+    var lastId = parseInt(container.getAttribute('data-last-id') || '0', 10) || 0;
+
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function nl2br(s) { return escapeHtml(s).replace(/\n/g,'<br>'); }
+    function scrollBottom() { container.scrollTop = container.scrollHeight; }
+    scrollBottom();
+
+    function appendMessage(m) {
+        var empty = document.getElementById('staff-empty-messages');
+        if (empty) empty.remove();
+        if (container.querySelector('[data-message-id="' + m.id + '"]')) return;
+        var wrap = document.createElement('div');
+        wrap.className = 'admin-message-bubble ' + (m.isAdmin ? 'admin-message-admin' : 'admin-message-user');
+        wrap.setAttribute('data-message-id', m.id);
+        var who = m.isAdmin ? ('🛡️ Staff (' + escapeHtml(m.sender) + ')') : escapeHtml(m.sender);
+        wrap.innerHTML = '<div class="admin-message-header"><span>' + who + '</span><span>' + escapeHtml(m.createdAt) + '</span></div><div class="admin-message-text">' + nl2br(m.message) + '</div>';
+        container.appendChild(wrap);
+        lastId = Math.max(lastId, m.id || 0);
+        container.setAttribute('data-last-id', String(lastId));
+        scrollBottom();
+    }
+
+    var pollTimer = null;
+    function poll() {
+        fetch('{{ path('staff_support_ticket_messages', { id: 0 }) }}'.replace('/0/', '/' + ticketId + '/') + '?after=' + lastId, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }, credentials: 'same-origin' })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (data) {
+                if (!data) return;
+                if (data.messages && data.messages.length) data.messages.forEach(appendMessage);
+                if (data.status === 'closed' && pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+            }).catch(function () {});
+    }
+    pollTimer = setInterval(poll, 5000);
+
+    var replyForm = document.getElementById('staff-reply-form');
+    if (replyForm) {
+        replyForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var fd = new FormData(replyForm);
+            fetch(replyForm.action, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }, body: fd, credentials: 'same-origin' })
+                .then(function (r) { return r.json().catch(function(){ return null; }); })
+                .then(function (data) {
+                    if (data && data.ok && data.message) {
+                        appendMessage(data.message);
+                        var ta = document.getElementById('staff-reply-message');
+                        if (ta) ta.value = '';
+                    } else if (data && data.error) {
+                        alert(data.error);
+                    } else {
+                        replyForm.submit();
+                    }
+                }).catch(function () { replyForm.submit(); });
+        });
+    }
+
+    var statusForm = document.getElementById('staff-status-form');
+    if (statusForm) {
+        var statusSelect = document.getElementById('ticket-status');
+        if (statusSelect) {
+            statusSelect.addEventListener('change', function () {
+                var fd = new FormData(statusForm);
+                fetch(statusForm.action, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }, body: fd, credentials: 'same-origin' })
+                    .then(function (r) { return r.json().catch(function(){ return null; }); })
+                    .then(function (data) {
+                        if (data && data.ok) {
+                            if (data.status === 'closed') window.location.reload();
+                        } else {
+                            statusForm.submit();
+                        }
+                    }).catch(function () { statusForm.submit(); });
+            });
+        }
+    }
+})();
+</script>
+{% endblock %}

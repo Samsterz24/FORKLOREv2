@@ -27,7 +27,8 @@
             <h1>{{ recipe.title }}</h1>
 
             <p class="recipe-author recipe-author--detail">
-                <span>by <strong>{{ recipe.user ? recipe.user.username : 'Unknown' }}</strong></span>
+                <span>by {% if recipe.user %}<a href="{{ path('profile_show', { username: recipe.user.username }) }}"><strong>{{ recipe.user.username }}</strong></a>{% else %}<strong>Unknown</strong>{% endif %}</span>
+                {% if recipe.isPublic is defined and not recipe.isPublic %}<span class="recipe-private-badge">Private</span>{% endif %}
             </p>
 
             {% if canManage is defined and canManage %}
@@ -66,7 +67,11 @@
 
             <section>
                 <h2>Instructions</h2>
-                <p>No instructions available.</p>
+                {% if recipe.instructions %}
+                    <p>{{ recipe.instructions|nl2br }}</p>
+                {% else %}
+                    <p>No instructions available.</p>
+                {% endif %}
             </section>
         </div>
     </main>

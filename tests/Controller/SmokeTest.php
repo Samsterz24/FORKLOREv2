@@ -153,31 +153,17 @@ final class SmokeTest extends WebTestCase
         $this->assertStringContainsString('No discussion available yet', (string) $client->getResponse()->getContent());
     }
 
-    /**
-     * @return iterable<string, array{string, string}>
-     */
-    public static function previewForms(): iterable
-    {
-        yield 'admin users' => ['/admin/users', 'no account was changed'];
-    }
-
-    #[DataProvider('previewForms')]
-    public function testPreviewFormsAcknowledgeWithoutSaving(string $path, string $expectedNotice): void
+    public function testAdminUsersPageRenders(): void
     {
         $client = static::createClient();
-        if (str_starts_with($path, '/admin')) {
-            $container = static::getContainer();
-            $user = $container->get(\App\Repository\UserRepository::class)->findOneBy(['username' => 'Samsterz24']);
-            if ($user) {
-                $client->loginUser($user);
-            }
+        $container = static::getContainer();
+        $user = $container->get(\App\Repository\UserRepository::class)->findOneBy(['username' => 'Samsterz24']);
+        if ($user) {
+            $client->loginUser($user);
         }
-        $client->request('POST', $path, ['_test' => '1']);
+        $client->request('GET', '/admin/users');
 
         $this->assertResponseIsSuccessful();
-
-        $content = (string) $client->getResponse()->getContent();
-        $this->assertStringContainsString('UI preview only', $content);
-        $this->assertStringContainsStringIgnoringCase($expectedNotice, $content);
+        $this->assertStringContainsString('User Management', (string) $client->getResponse()->getContent());
     }
 }
