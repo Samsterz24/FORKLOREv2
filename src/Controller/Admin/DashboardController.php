@@ -37,9 +37,15 @@ final class DashboardController extends AbstractController
         }
 
         $userCount = (int) $em->getRepository(User::class)->count([]);
+        $staffCount = (int) $em->getRepository(User::class)->count(['role' => 'ROLE_STAFF']);
         $recipeCount = (int) $em->getRepository(Recipe::class)->count([]);
         $openTickets = (int) $em->getRepository(SupportTicket::class)->count(['status' => 'open'])
             + (int) $em->getRepository(SupportTicket::class)->count(['status' => 'in_progress']);
+        $totalRecords = $recipeCount
+            + (int) $em->getRepository(\App\Entity\Story::class)->count([])
+            + (int) $em->getRepository(Post::class)->count([])
+            + (int) $em->getRepository(Reply::class)->count([])
+            + (int) $em->getRepository(SupportTicket::class)->count([]);
 
         $qb = $em->getRepository(Recipe::class)->createQueryBuilder('r')
             ->leftJoin('r.user', 'u')
@@ -95,8 +101,10 @@ final class DashboardController extends AbstractController
             'timeframe' => $timeframe,
             'stats' => [
                 'users' => $userCount,
+                'staff' => $staffCount,
                 'recipes' => $recipeCount,
                 'openTickets' => $openTickets,
+                'totalRecords' => $totalRecords,
                 'logs' => count($recentWarnings),
             ],
             'chart' => $chart,

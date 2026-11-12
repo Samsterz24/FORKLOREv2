@@ -67,34 +67,99 @@ final class CommunityController extends AbstractController
 
         if ($post && $request->isMethod('POST')) {
             $user = $this->getUser();
-            $comment = trim((string) $request->request->get('comment', ''));
+            $action = (string) $request->request->get('action', 'reply');
             $token = (string) $request->request->get('_token', '');
 
-            if (!$user instanceof User) {
-                $error = 'Please log in to reply.';
-            } elseif (!$this->isCsrfTokenValid('community_reply_' . $post->getId(), $token)) {
-                $error = 'Invalid CSRF token. Please try again.';
-            } elseif ($comment === '') {
-                $error = 'Please enter a reply.';
+            if ($action === 'edit_post') {
+                if (!$this->canManagePost($user, $post)) {
+                    $error = 'You do not have permission to edit this post.';
+                } elseif (!$this->isCsrfTokenValid('community_edit_post_' . $post->getId(), $token)) {
+                    $error = 'Invalid CSRF token. Please try again.';
+                } else {
+                    $title = trim((string) $request->request->get('title', $post->getTitle()));
+                    $category = trim((string) $request->request->get('category', $post->getCategory()));
+                    $content = trim((string) $request->request->get('content', $post->getContent()));
+                    if ($title === '' || $content === '') {
+                        $error = 'Title and content are required.';
+                    } else {
+                        $post->setTitle($title);
+                        $post->setCategory($category !== '' ? $category : $post->getCategory());
+                        $post->setContent($content);
+                        $this->em->flush();
+                        $this->addFlash('success', 'Post updated successfully.');
+                        return $this->redirectToRoute('community_show', ['id' => $post->getId()]);
+                    }
+                }
             } else {
-                $reply = new Reply();
-                $reply->setPost($post);
-                $reply->setUser($user);
-                $reply->setComment($comment);
-                $this->em->persist($reply);
-                $this->em->flush();
+                $comment = trim((string) $request->request->get('comment', ''));
 
-                return $this->redirectToRoute('community_show', ['id' => $post->getId(), '_fragment' => 'replies']);
+                if (!$user instanceof User) {
+                    $error = 'Please log in to reply.';
+                } elseif (!$this->isCsrfTokenValid('community_reply_' . $post->getId(), $token)) {
+                    $error = 'Invalid CSRF token. Please try again.';
+                } elseif ($comment === '') {
+                    $error = 'Please enter a reply.';
+                } else {
+                    $reply = new Reply();
+                    $reply->setPost($post);
+                    $reply->setUser($user);
+                    $reply->setComment($comment);
+                    $this->em->persist($reply);
+                    $this->em->flush();
+
+                    return $this->redirectToRoute('community_show', ['id' => $post->getId(), '_fragment' => 'replies']);
+                }
             }
         }
 
         $replies = $post ? $replyRepository->findForPost($post) : [];
+        $canManagePost = $this->canManagePost($this->getUser(), $post);
 
         return $this->render('community/show.html.twig', [
             'post' => $post,
             'replies' => $replies,
             'notice' => $notice,
             'error' => $error,
+            'canManagePost' => $canManagePost,
+            'categories' => ['General', 'Recipe Help', 'Tips & Tricks', 'Equipment'],
         ]);
+    }
+
+    #[Route('/community/{id}/delete', name: 'community_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function delete(int $id, Request $request): Response
+    {
+        $post = $this->em->getRepository(Post::class)->find($id);
+        if (!$post) {
+            throw $this->createNotFoundException();
+        }
+
+        $user = $this->getUser();
+        if (!$this->canManagePost($user, $post)) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $token = (string) $request->request->get('_token', '');
+        if (!$this->isCsrfTokenValid('community_delete_post_' . $post->getId(), $token)) {
+            $this->addFlash('error', 'Invalid delete request.');
+            return $this->redirectToRoute('community_show', ['id' => $post->getId()]);
+        }
+
+        $this->em->remove($post);
+        $this->em->flush();
+        $this->addFlash('success', 'Post deleted successfully.');
+
+        return $this->redirectToRoute('community_index');
+    }
+
+    private function canManagePost(?object $user, ?Post $post): bool
+    {
+        if (!$post || !$user instanceof User) {
+            return false;
+        }
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return true;
+        }
+        $owner = $post->getUser();
+        return $owner && $owner->getId() === $user->getId();
     }
 }

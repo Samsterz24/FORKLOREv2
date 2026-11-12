@@ -1,0 +1,89 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Admin - All Records | ForkLore{% endblock %}
+{% block admin_heading %}All Records (System-wide){% endblock %}
+{% block admin_subheading %}View, search, filter, and manage records across the platform. Admins can edit or delete supported records.{% endblock %}
+
+{% block admin_content %}
+    {% if notice %}
+        <div class="admin-alert admin-alert-success" role="status">✓ {{ notice }}</div>
+    {% endif %}
+    {% if error %}
+        <div class="admin-alert admin-alert-error" role="alert">{{ error }}</div>
+    {% endif %}
+
+    <section class="admin-controls-card">
+        <form method="get" action="{{ path('admin_records') }}" class="admin-filters-form">
+            <label class="visually-hidden" for="records-search">Search records</label>
+            <input type="text" id="records-search" name="search" class="admin-form-control admin-search-control"
+                   placeholder="Search by title, owner, type, or details..." value="{{ search }}">
+
+            <label class="visually-hidden" for="records-type">Record type</label>
+            <select id="records-type" name="type" class="admin-form-control">
+                <option value="all" {{ type == 'all' ? 'selected' : '' }}>All types</option>
+                <option value="recipe" {{ type == 'recipe' ? 'selected' : '' }}>Recipes</option>
+                <option value="story" {{ type == 'story' ? 'selected' : '' }}>Stories</option>
+                <option value="post" {{ type == 'post' ? 'selected' : '' }}>Community Posts</option>
+                <option value="reply" {{ type == 'reply' ? 'selected' : '' }}>Replies</option>
+                <option value="support_ticket" {{ type == 'support_ticket' ? 'selected' : '' }}>Support Tickets</option>
+            </select>
+
+            <button type="submit" class="admin-btn admin-btn-filter">Search &amp; Filter</button>
+            {% if search != '' or type != 'all' %}
+                <a href="{{ path('admin_records') }}" class="admin-btn-reset">Clear</a>
+            {% endif %}
+        </form>
+        <div class="admin-muted">Showing <strong>{{ records|length }}</strong> records</div>
+    </section>
+
+    <section class="admin-section-card">
+        <div class="admin-table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>ID</th>
+                        <th>Title / Subject</th>
+                        <th>Owner</th>
+                        <th>Details</th>
+                        <th>Created</th>
+                        <th class="admin-col-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in records %}
+                        <tr>
+                            <td><span class="admin-badge admin-badge-category">{{ r.type|replace({'_':' '})|upper }}</span></td>
+                            <td><strong>#{{ r.id }}</strong></td>
+                            <td>{{ r.title }}</td>
+                            <td>{{ r.owner }}</td>
+                            <td>{{ r.details }}</td>
+                            <td class="admin-muted">{{ r.createdAt ? r.createdAt|date('M d, Y H:i') : '—' }}</td>
+                            <td>
+                                <div class="admin-actions-cell" style="display:flex;gap:6px;flex-wrap:wrap;">
+                                    {% if r.viewUrl %}
+                                        <a href="{{ r.viewUrl }}" class="admin-btn">View</a>
+                                    {% endif %}
+                                    {% if r.editUrl %}
+                                        <a href="{{ r.editUrl }}" class="admin-btn admin-btn-save">Edit</a>
+                                    {% endif %}
+                                    <form method="post" action="{{ path('admin_records', { type: type, search: search }) }}" onsubmit="return confirm('Delete {{ r.type|replace({'_':' '}) }} #{{ r.id }}? This cannot be undone.');" style="display:inline;">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="record_type" value="{{ r.type }}">
+                                        <input type="hidden" name="record_id" value="{{ r.id }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_record_delete_' ~ r.type ~ '_' ~ r.id) }}">
+                                        <button type="submit" class="admin-btn admin-btn-ban">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="admin-empty-cell">No records found for the selected filters.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}

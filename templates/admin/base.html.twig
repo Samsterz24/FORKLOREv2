@@ -38,6 +38,11 @@
                     <span class="admin-nav-text">Transactions</span>
                 </a>
 
+                <a href="{{ path('admin_records') }}" class="admin-nav-link {{ currentAdminRoute == 'admin_records' ? 'active' : '' }}">
+                    <span class="admin-nav-icon" aria-hidden="true">🗂️</span>
+                    <span class="admin-nav-text">All Records</span>
+                </a>
+
                 <a href="{{ path('admin_support') }}" class="admin-nav-link {{ currentAdminRoute == 'admin_support' ? 'active' : '' }}">
                     <span class="admin-nav-icon" aria-hidden="true">💬</span>
                     <span class="admin-nav-text">Support Desk</span>

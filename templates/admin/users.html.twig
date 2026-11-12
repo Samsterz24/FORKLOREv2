@@ -2,7 +2,7 @@
 
 {% block title %}Admin - User Management | ForkLore{% endblock %}
 {% block admin_heading %}User Management &amp; Access Control{% endblock %}
-{% block admin_subheading %}Role assignment and account status moderation.{% endblock %}
+{% block admin_subheading %}Create, update, reset passwords, assign roles, manage status, and delete user accounts.{% endblock %}
 
 {% block admin_content %}
     {% if notice %}
@@ -11,6 +11,34 @@
     {% if error %}
         <div class="admin-alert admin-alert-error" role="alert">{{ error }}</div>
     {% endif %}
+
+    <section class="admin-section-card">
+        <div class="admin-section-header">
+            <h2>➕ Create User / Staff / Admin</h2>
+            <span class="admin-muted">Admin-managed account creation</span>
+        </div>
+        <form method="post" action="{{ path('admin_users') }}" class="admin-filters-form" style="flex-wrap:wrap;gap:12px;align-items:flex-end;">
+            <input type="hidden" name="action" value="create_user">
+            <input type="hidden" name="_token" value="{{ csrf_token('admin_user_create') }}">
+            <label>Username<br><input type="text" name="username" required minlength="3" maxlength="50"></label>
+            <label>Email<br><input type="email" name="email" required maxlength="100"></label>
+            <label>Password<br><input type="password" name="password" required minlength="6"></label>
+            <label>Role<br>
+                <select name="role" required>
+                    <option value="user">user</option>
+                    <option value="staff">staff</option>
+                    <option value="admin">admin</option>
+                </select>
+            </label>
+            <label>Status<br>
+                <select name="status">
+                    <option value="active">active</option>
+                    <option value="banned">banned</option>
+                </select>
+            </label>
+            <button type="submit" class="admin-btn admin-btn-save">Create Account</button>
+        </form>
+    </section>
 
     <section class="admin-section-card">
         <div class="admin-section-header">
@@ -23,10 +51,10 @@
                 <thead>
                     <tr>
                         <th class="admin-col-id">ID</th>
-                        <th>Username</th>
-                        <th>Email</th>
+                        <th>Username / Email</th>
                         <th>Role</th>
                         <th>Status</th>
+                        <th>Date Created</th>
                         <th class="admin-col-actions">Actions</th>
                     </tr>
                 </thead>
@@ -35,24 +63,58 @@
                         <tr>
                             <td><strong>#{{ user.id }}</strong></td>
                             <td>
-                                {{ user.username }}
-                                {% if user.id == currentAdminId %}
-                                    <span class="admin-user-meta">(You)</span>
-                                {% endif %}
+                                <div><strong>{{ user.username }}</strong>{% if user.id == currentAdminId %} <span class="admin-user-meta">(You)</span>{% endif %}</div>
+                                <div class="admin-muted">{{ user.email }}</div>
+                                <details style="margin-top:8px;">
+                                    <summary>Edit details</summary>
+                                    <form method="post" action="{{ path('admin_users') }}" style="margin-top:8px;display:grid;gap:6px;">
+                                        <input type="hidden" name="action" value="update_user">
+                                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_user_update_user_' ~ user.id) }}">
+                                        <label>Username <input type="text" name="username" value="{{ user.username }}" required maxlength="50"></label>
+                                        <label>Email <input type="email" name="email" value="{{ user.email }}" required maxlength="100"></label>
+                                        <button type="submit" class="admin-btn admin-btn-save">Save Details</button>
+                                    </form>
+                                </details>
+                                <details style="margin-top:6px;">
+                                    <summary>Reset password</summary>
+                                    <form method="post" action="{{ path('admin_users') }}" onsubmit="return confirm('Reset password for {{ user.username|e('js') }}?');" style="margin-top:8px;display:grid;gap:6px;">
+                                        <input type="hidden" name="action" value="reset_password">
+                                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_user_reset_password_' ~ user.id) }}">
+                                        <label>New password <input type="password" name="new_password" required minlength="6"></label>
+                                        <button type="submit" class="admin-btn">Reset Password</button>
+                                    </form>
+                                </details>
                             </td>
-                            <td>{{ user.email }}</td>
                             <td>
                                 <span class="admin-badge admin-badge-{{ user.role == 'admin' ? 'admin' : (user.role == 'staff' ? 'mod' : 'user') }}">
                                     {{ user.role|upper }}
                                 </span>
+                                <form method="post" action="{{ path('admin_users') }}" class="admin-role-form" style="margin-top:8px;">
+                                    <input type="hidden" name="action" value="update_role">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('admin_user_update_role_' ~ user.id) }}">
+                                    <label class="visually-hidden" for="role-{{ user.id }}">Role for {{ user.username }}</label>
+                                    <select name="role" id="role-{{ user.id }}" class="admin-role-select">
+                                        <option value="user" {{ user.role == 'user' ? 'selected' : '' }}>user</option>
+                                        <option value="staff" {{ user.role == 'staff' ? 'selected' : '' }}>staff</option>
+                                        <option value="admin" {{ user.role == 'admin' ? 'selected' : '' }}>admin</option>
+                                    </select>
+                                    <button type="submit" class="admin-btn admin-btn-save"
+                                            {{ user.id == currentAdminId ? 'disabled title="Cannot change your own role"' : '' }}>
+                                        Set Role
+                                    </button>
+                                </form>
                             </td>
                             <td>
                                 <span class="admin-badge admin-badge-{{ user.status == 'active' ? 'active' : 'banned' }}">
                                     {{ user.status|capitalize }}
                                 </span>
                             </td>
+                            <td class="admin-muted">{{ user.createdAt|date('M d, Y H:i') }}</td>
                             <td>
-                                <div class="admin-actions-cell">
+                                <div class="admin-actions-cell" style="display:grid;gap:8px;">
                                     <form method="post" action="{{ path('admin_users') }}"
                                           onsubmit="return confirm('Toggle status for {{ user.username|e('js') }}?');">
                                         <input type="hidden" name="action" value="toggle_status">
@@ -60,27 +122,22 @@
                                         <input type="hidden" name="_token" value="{{ csrf_token('admin_user_toggle_status_' ~ user.id) }}">
                                         {% if user.status == 'active' %}
                                             <button type="submit" class="admin-btn admin-btn-ban"
-                                                    {{ user.id == currentAdminId ? 'disabled title="Cannot ban yourself"' : '' }}>
-                                                Ban User
+                                                    {{ user.id == currentAdminId ? 'disabled title="Cannot change your own account status"' : '' }}>
+                                                Disable/Ban
                                             </button>
                                         {% else %}
-                                            <button type="submit" class="admin-btn admin-btn-unban">Unban User</button>
+                                            <button type="submit" class="admin-btn admin-btn-unban">Activate/Unban</button>
                                         {% endif %}
                                     </form>
 
-                                    <form method="post" action="{{ path('admin_users') }}" class="admin-role-form">
-                                        <input type="hidden" name="action" value="update_role">
+                                    <form method="post" action="{{ path('admin_users') }}"
+                                          onsubmit="return confirm('Delete user {{ user.username|e('js') }}? This cannot be undone.');">
+                                        <input type="hidden" name="action" value="delete_user">
                                         <input type="hidden" name="user_id" value="{{ user.id }}">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_user_update_role_' ~ user.id) }}">
-                                        <label class="visually-hidden" for="role-{{ user.id }}">Role for {{ user.username }}</label>
-                                        <select name="role" id="role-{{ user.id }}" class="admin-role-select">
-                                            <option value="user" {{ user.role == 'user' ? 'selected' : '' }}>user</option>
-                                            <option value="staff" {{ user.role == 'staff' ? 'selected' : '' }}>staff</option>
-                                            <option value="admin" {{ user.role == 'admin' ? 'selected' : '' }}>admin</option>
-                                        </select>
-                                        <button type="submit" class="admin-btn admin-btn-save"
-                                                {{ user.id == currentAdminId ? 'disabled title="Cannot change your own role"' : '' }}>
-                                            Set Role
+                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_user_delete_user_' ~ user.id) }}">
+                                        <button type="submit" class="admin-btn admin-btn-ban"
+                                                {{ user.id == currentAdminId ? 'disabled title="Cannot delete your own account"' : '' }}>
+                                            Delete User
                                         </button>
                                     </form>
                                 </div>

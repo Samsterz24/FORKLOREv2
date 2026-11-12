@@ -13,6 +13,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class ProfileController extends AbstractController
@@ -91,10 +92,15 @@ final class ProfileController extends AbstractController
         $notice = null;
         $error = null;
         if ($isOwner && $request->isMethod('POST')) {
-            $bio = trim((string) $request->request->get('bio', ''));
-            $profile->setBio($bio !== '' ? $bio : null);
-            $this->em->flush();
-            $notice = 'Profile updated.';
+            $action = (string) $request->request->get('action', 'update_profile');
+            if ($action === 'change_password') {
+                // handled in changePassword route; keep compatibility no-op here
+            } else {
+                $bio = trim((string) $request->request->get('bio', ''));
+                $profile->setBio($bio !== '' ? $bio : null);
+                $this->em->flush();
+                $notice = 'Profile updated.';
+            }
         }
 
         $uploadedRecipes = $this->em->getRepository(Recipe::class)->findBy(
@@ -124,5 +130,43 @@ final class ProfileController extends AbstractController
             'notice' => $notice,
             'error' => $error,
         ]);
+    }
+
+    #[Route('/profile/change-password', name: 'profile_change_password', methods: ['POST'])]
+    public function changePassword(Request $request, UserPasswordHasherInterface $hasher): Response
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $token = (string) $request->request->get('_token', '');
+        if (!$this->isCsrfTokenValid('profile_change_password', $token)) {
+            $this->addFlash('error', 'Invalid CSRF token.');
+            return $this->redirectToRoute('profile');
+        }
+
+        $currentPassword = (string) $request->request->get('current_password', '');
+        $newPassword = (string) $request->request->get('new_password', '');
+        $confirmPassword = (string) $request->request->get('confirm_password', '');
+
+        if (!$hasher->isPasswordValid($user, $currentPassword)) {
+            $this->addFlash('error', 'Current password is incorrect.');
+            return $this->redirectToRoute('profile');
+        }
+        if (mb_strlen($newPassword) < 6) {
+            $this->addFlash('error', 'New password must be at least 6 characters.');
+            return $this->redirectToRoute('profile');
+        }
+        if ($newPassword !== $confirmPassword) {
+            $this->addFlash('error', 'New password and confirmation do not match.');
+            return $this->redirectToRoute('profile');
+        }
+
+        $user->setPassword($hasher->hashPassword($user, $newPassword));
+        $this->em->flush();
+        $this->addFlash('success', 'Password changed successfully.');
+
+        return $this->redirectToRoute('profile');
     }
 }

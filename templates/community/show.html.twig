@@ -32,6 +32,30 @@
             <div class="post-hero-content">
                 {{ post.content|nl2br }}
             </div>
+
+            {% if canManagePost|default(false) %}
+                <details style="margin-top:16px;">
+                    <summary class="primary-btn" style="display:inline-block;cursor:pointer;">Edit / Delete Post</summary>
+                    <form method="post" action="{{ path('community_show', { id: post.id }) }}" style="margin-top:12px;display:grid;gap:10px;">
+                        <input type="hidden" name="action" value="edit_post">
+                        <input type="hidden" name="_token" value="{{ csrf_token('community_edit_post_' ~ post.id) }}">
+                        <label>Title<br><input type="text" name="title" value="{{ post.title }}" required style="width:100%;padding:8px;"></label>
+                        <label>Category<br>
+                            <select name="category" style="padding:8px;">
+                                {% for c in categories|default(['General', 'Recipe Help', 'Tips & Tricks', 'Equipment']) %}
+                                    <option value="{{ c }}" {{ post.category == c ? 'selected' : '' }}>{{ c }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <label>Content<br><textarea name="content" rows="6" required style="width:100%;padding:8px;">{{ post.content }}</textarea></label>
+                        <button type="submit" class="primary-btn">Save Changes</button>
+                    </form>
+                    <form method="post" action="{{ path('community_delete', { id: post.id }) }}" onsubmit="return confirm('Delete this post? This action cannot be undone.');" style="margin-top:10px;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('community_delete_post_' ~ post.id) }}">
+                        <button type="submit" class="card-delete-btn">Delete Post</button>
+                    </form>
+                </details>
+            {% endif %}
         </div>
 
         {% if error %}

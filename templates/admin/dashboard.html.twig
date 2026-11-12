@@ -10,17 +10,23 @@
             <div class="admin-stat-icon">👥</div>
             <div class="admin-stat-meta">
                 <h3>{{ stats.users ?? '—' }}</h3>
-                <span class="admin-stat-pending">Database pending</span>
                 <p>Registered Users</p>
             </div>
         </div>
 
         <div class="admin-stat-card">
-            <div class="admin-stat-icon">📖</div>
+            <div class="admin-stat-icon">🛡️</div>
             <div class="admin-stat-meta">
-                <h3>{{ stats.recipes ?? '—' }}</h3>
-                <span class="admin-stat-pending">Database pending</span>
-                <p>Community Recipes</p>
+                <h3>{{ stats.staff ?? '—' }}</h3>
+                <p>Total Staff</p>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="admin-stat-icon">📚</div>
+            <div class="admin-stat-meta">
+                <h3>{{ stats.totalRecords ?? '—' }}</h3>
+                <p>Total Records</p>
             </div>
         </div>
 
@@ -28,17 +34,7 @@
             <div class="admin-stat-icon">💬</div>
             <div class="admin-stat-meta">
                 <h3>{{ stats.openTickets ?? '—' }}</h3>
-                {% if stats.openTickets is null %}<span class="admin-stat-pending">Database pending</span>{% endif %}
                 <p>Open Support Tickets</p>
-            </div>
-        </div>
-
-        <div class="admin-stat-card">
-            <div class="admin-stat-icon">🕘</div>
-            <div class="admin-stat-meta">
-                <h3>{{ stats.logs ?? '—' }}</h3>
-                <span class="admin-stat-pending">Database pending</span>
-                <p>Recorded Activities</p>
             </div>
         </div>
     </section>

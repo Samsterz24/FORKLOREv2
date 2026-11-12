@@ -41,7 +41,7 @@
 
                 {% if isOwner %}
                 <form method="post" action="{{ path('profile') }}" class="profile-bio-form" id="bio-form" style="display:none;">
-                    <input type="hidden" name="update_profile" value="1">
+                    <input type="hidden" name="action" value="update_profile">
                     <label class="visually-hidden" for="profile-bio-input">Your bio</label>
                     <textarea id="profile-bio-input" name="bio" rows="3" placeholder="Tell the community about your culinary roots...">{{ profile.bio }}</textarea>
                     <div class="profile-bio-form-actions">
@@ -72,6 +72,17 @@
 
                 <button type="button" class="btn-edit-bio" onclick="toggleBioForm(true)">✎ Edit Bio</button>
             </div>
+
+            <details class="profile-account-settings" style="margin-top:16px;">
+                <summary class="btn-edit-bio">🔒 Account Settings (Change Password)</summary>
+                <form method="post" action="{{ path('profile_change_password') }}" style="margin-top:12px;display:grid;gap:10px;max-width:420px;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('profile_change_password') }}">
+                    <label>Current password<br><input type="password" name="current_password" required></label>
+                    <label>New password<br><input type="password" name="new_password" required minlength="6"></label>
+                    <label>Confirm new password<br><input type="password" name="confirm_password" required minlength="6"></label>
+                    <button type="submit" class="primary-btn">Change Password</button>
+                </form>
+            </details>
             {% endif %}
         </div>
 
