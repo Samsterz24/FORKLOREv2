@@ -1754,3 +1754,13 @@ body {
     flex-direction: column;
     gap: 12px;
 }
+.admin-user-modal-body .admin-user-actions-panel {
+    position: static;
+    width: auto;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
