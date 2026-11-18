@@ -31,9 +31,12 @@ final class SubscriptionController extends AbstractController
 
         $errors = [];
         $planType = 'monthly';
+        $tier = 'basic';
 
         if ($request->isMethod('POST')) {
             $planType = $request->request->get('plan_type') === 'annual' ? 'annual' : 'monthly';
+            $tier = in_array($request->request->get('tier', 'basic'), ['basic', 'plus', 'premium'], true)
+                ? $request->request->get('tier', 'basic') : 'basic';
             $token = new CsrfToken('subscribe', (string) $request->request->get('_token'));
 
             if (!$csrfTokenManager->isTokenValid($token)) {
@@ -64,22 +67,36 @@ final class SubscriptionController extends AbstractController
                 $user->setHasFoodieStamp(true);
                 $user->setStampExpiresAt($newExpires);
 
+                $tierLabels = ['basic' => 'Basic', 'plus' => 'Plus', 'premium' => 'Premium'];
                 $subscription = new Subscription();
                 $subscription->setUser($user);
-                $subscription->setPlan($planType === 'annual' ? 'foodie_yearly' : 'foodie_monthly');
+                $subscription->setPlan('foodie_' . $tier . '_' . ($planType === 'annual' ? 'yearly' : 'monthly'));
                 $subscription->setStatus('active');
                 $subscription->setExpiresAt($newExpires);
                 $this->em->persist($subscription);
 
                 $this->em->flush();
 
-                $this->addFlash('success', $planType === 'annual'
-                    ? 'Lore Foodie Stamp activated (annual). Thanks for supporting ForkLore!'
-                    : 'Lore Foodie Stamp activated (monthly). Thanks for supporting ForkLore!');
+                $this->addFlash('success', sprintf(
+                    'Lore Foodie %s Stamp activated (%s). Thanks for supporting ForkLore!',
+                    $tierLabels[$tier],
+                    $planType === 'annual' ? 'annual' : 'monthly'
+                ));
 
                 return $this->redirectToRoute('subscriptions_index');
             }
         }
+
+        $success = $request->getSession()->getFlashBag()->get('success');
+        $successMessage = $success[0] ?? null;
+
+        return $this->render('subscriptions/index.html.twig', [
+            'user' => $user,
+            'success' => $successMessage,
+            'errors' => $errors,
+            'planType' => $planType,
+            'tier' => $tier,
+        ]);
 
         $success = $request->getSession()->getFlashBag()->get('success');
         $successMessage = $success[0] ?? null;

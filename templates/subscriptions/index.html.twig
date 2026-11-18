@@ -2,16 +2,20 @@
 
 {% block title %}Lore Foodie Stamp Subscription - ForkLore{% endblock %}
 
+{% block page_styles %}
+    <link rel="stylesheet" href="{{ asset('styles/subscriptions.css') }}">
+{% endblock %}
+
 {% block content %}
-    <main class="subscription-page" style="max-width:950px;margin:40px auto;padding:0 20px;">
+    <main class="subscription-page">
         {% if success %}
-            <div class="subscription-success" style="background:#e6fffa;border:2px solid #38b2ac;color:#234e52;padding:18px 24px;border-radius:14px;margin-bottom:30px;text-align:center;font-weight:700;">
+            <div class="subscription-success">
                 {{ success }}
                 <div style="margin-top:10px;"><a href="{{ path('profile') }}" style="color:#2c7a7b;text-decoration:underline;font-size:14px;">Return to your profile &rarr;</a></div>
             </div>
         {% endif %}
         {% if errors is not empty %}
-            <div class="subscription-errors" style="background:#fff5f5;border:2px solid #e53e3e;color:#742a2a;padding:18px 24px;border-radius:14px;margin-bottom:30px;">
+            <div class="subscription-errors">
                 <strong>Please check the following details:</strong>
                 <ul style="margin:0;padding-left:20px;font-size:14px;">
                     {% for e in errors %}<li>{{ e }}</li>{% endfor %}
@@ -19,71 +23,138 @@
             </div>
         {% endif %}
 
-        <div style="background:linear-gradient(135deg,#2b170c,#422210);color:#fff;border-radius:20px;padding:35px 30px;border:1px solid #e28743;margin-bottom:30px;position:relative;overflow:hidden;">
-            <h1 style="font-size:32px;font-weight:800;margin:0 0 10px 0;">Join the Lore Foodie Stamp Club</h1>
-            <p style="font-size:16px;color:#d6c6bb;margin:0;max-width:600px;line-height:1.5;">Support culinary creators and sport the golden 🏅 Lore Foodie badge.</p>
+        <div class="subscription-hero">
+            <h1>Join the Lore Foodie Stamp Club</h1>
+            <p>Support culinary creators and sport the golden 🏅 Lore Foodie badge. Choose the tier that fits you best.</p>
             <div style="margin-top:20px;">
                 {% if user.hasFoodieStamp %}
-                    <span style="background:rgba(16,185,129,0.2);border:1px solid #10b981;color:#34d399;font-size:13px;font-weight:700;padding:6px 16px;border-radius:20px;">✓ Active{% if user.stampExpiresAt %} (until {{ user.stampExpiresAt|date('M d, Y') }}){% endif %}</span>
+                    <span class="stamp-active-badge">✓ Active{% if user.stampExpiresAt %} (until {{ user.stampExpiresAt|date('M d, Y') }}){% endif %}</span>
                 {% else %}
-                    <span style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fde68a;font-size:13px;font-weight:600;padding:6px 16px;border-radius:20px;">Standard Account</span>
+                    <span class="stamp-standard-badge">Standard Account</span>
                 {% endif %}
             </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:30px;align-items:start;">
-            <div style="background:#fff;border:1px solid #fae8d7;border-radius:16px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,0.04);">
-                <h3 style="font-size:18px;font-weight:800;color:#17120d;margin:0 0 16px 0;">Membership Privileges</h3>
-                <div style="display:flex;flex-direction:column;gap:16px;">
-                    <div style="display:flex;gap:14px;"><div style="font-size:22px;">👨‍🍳</div><div><strong style="color:#d3541b;font-size:14px;display:block;">Verified Chef Access</strong><span style="font-size:13px;color:#634f40;">Unlimited digital access to master culinary guides.</span></div></div>
-                    <div style="display:flex;gap:14px;"><div style="font-size:22px;">💰</div><div><strong style="color:#d3541b;font-size:14px;display:block;">Recipe Monetization</strong><span style="font-size:13px;color:#634f40;">Earn revenue from your creations.</span></div></div>
-                    <div style="display:flex;gap:14px;"><div style="font-size:22px;">🏅</div><div><strong style="color:#d3541b;font-size:14px;display:block;">Official Badge</strong><span style="font-size:13px;color:#634f40;">Stand out in comments and profiles.</span></div></div>
+        {# Pricing tiers #}
+        <div class="pricing-grid">
+            <div class="pricing-card" data-tier="basic">
+                <div class="pricing-card-header">
+                    <h3>Basic</h3>
+                    <div class="pricing-price"><span class="pricing-currency">$</span><span class="pricing-amount">2.99</span><span class="pricing-period">/mo</span></div>
                 </div>
+                <ul class="pricing-features">
+                    <li>🏅 Official Foodie Badge</li>
+                    <li>👨‍🍳 Verified Chef Access</li>
+                    <li>📖 Unlimited recipe browsing</li>
+                    <li>💬 Community posting</li>
+                </ul>
+                <button type="button" class="pricing-select-btn" data-tier="basic">Select Basic</button>
             </div>
 
-            <div style="background:#fff;border:1px solid #fae8d7;border-radius:16px;padding:30px;box-shadow:0 6px 24px rgba(211,84,27,0.08);">
-                <h3 style="font-size:20px;font-weight:800;color:#17120d;margin:0 0 20px 0;">Payment Details</h3>
+            <div class="pricing-card pricing-card--featured" data-tier="plus">
+                <div class="pricing-card-badge">Most Popular</div>
+                <div class="pricing-card-header">
+                    <h3>Plus</h3>
+                    <div class="pricing-price"><span class="pricing-currency">$</span><span class="pricing-amount">5.99</span><span class="pricing-period">/mo</span></div>
+                </div>
+                <ul class="pricing-features">
+                    <li>Everything in Basic, plus:</li>
+                    <li>💰 Recipe Monetization</li>
+                    <li>⭐ Featured recipe boosts</li>
+                    <li>📊 Creator analytics dashboard</li>
+                    <li>🎯 Priority support</li>
+                </ul>
+                <button type="button" class="pricing-select-btn pricing-select-btn--featured" data-tier="plus">Select Plus</button>
+            </div>
+
+            <div class="pricing-card" data-tier="premium">
+                <div class="pricing-card-header">
+                    <h3>Premium</h3>
+                    <div class="pricing-price"><span class="pricing-currency">$</span><span class="pricing-amount">10.99</span><span class="pricing-period">/mo</span></div>
+                </div>
+                <ul class="pricing-features">
+                    <li>Everything in Plus, plus:</li>
+                    <li>🏆 Golden Premium Badge</li>
+                    <li>🚀 Unlimited recipe boosts</li>
+                    <li>🎨 Custom profile themes</li>
+                    <li>📞 Dedicated support line</li>
+                    <li>📈 Advanced analytics &amp; insights</li>
+                </ul>
+                <button type="button" class="pricing-select-btn" data-tier="premium">Select Premium</button>
+            </div>
+        </div>
+
+        <div class="subscription-payment" id="payment-section">
+            <div class="subscription-payment-inner">
+                <h3>Payment Details</h3>
+                <div class="selected-tier-display" id="selected-tier-display">
+                    Selected: <strong id="selected-tier-name">Basic</strong> — <span id="selected-tier-price">$2.99/mo</span>
+                </div>
                 <form method="POST" action="{{ path('subscriptions_index') }}" id="subscription-form">
                     <input type="hidden" name="_token" value="{{ csrf_token('subscribe') }}">
-                    <div style="margin-bottom:16px;">
-                        <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;" for="plan_type">Plan</label>
-                        <select id="plan_type" name="plan_type" style="width:100%;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
-                            <option value="monthly" {{ planType == 'monthly' ? 'selected' : '' }}>Monthly $2.99</option>
-                            <option value="annual" {{ planType == 'annual' ? 'selected' : '' }}>Annual $29.99</option>
-                        </select>
-                    </div>
-                    <div style="margin-bottom:16px;">
-                        <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;" for="payment_method">Payment Method</label>
-                        <select id="payment_method" name="payment_method" style="width:100%;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
-                            <option value="Mock Card">Mock Card</option>
-                            <option value="Mock GCash">Mock GCash</option>
-                        </select>
-                    </div>
-                    <div style="margin-bottom:16px;">
-                        <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;" for="card_name">Cardholder Name</label>
-                        <input type="text" id="card_name" name="card_name" value="{{ user.username }}" required style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
-                    </div>
-                    <div style="margin-bottom:16px;">
-                        <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;" for="card_number">Card Number</label>
-                        <input type="text" id="card_number" name="card_number" value="4242 4242 4242 4242" required style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
-                        <div>
-                            <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;" for="card_expiry">Expiry (MM/YY)</label>
-                            <input type="text" id="card_expiry" name="card_expiry" value="12/28" required style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
+                    <input type="hidden" name="tier" id="tier-input" value="basic">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="plan_type">Billing Cycle</label>
+                            <select id="plan_type" name="plan_type">
+                                <option value="monthly" {{ planType == 'monthly' ? 'selected' : '' }}>Monthly</option>
+                                <option value="annual" {{ planType == 'annual' ? 'selected' : '' }}>Annual (save 10%)</option>
+                            </select>
                         </div>
-                        <div>
-                            <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;" for="card_cvv">CVV</label>
-                            <input type="password" id="card_cvv" name="card_cvv" value="789" required style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
+                        <div class="form-group">
+                            <label for="payment_method">Payment Method</label>
+                            <select id="payment_method" name="payment_method">
+                                <option value="Mock Card">Mock Card</option>
+                                <option value="Mock GCash">Mock GCash</option>
+                            </select>
                         </div>
                     </div>
-                    <div style="margin-bottom:22px;">
-                        <label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:6px;" for="billing_zip">Billing Zip</label>
-                        <input type="text" id="billing_zip" name="billing_zip" value="90210" required style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #d8c7b8;border-radius:8px;font-size:14px;">
+                    <div class="form-group">
+                        <label for="card_name">Cardholder Name</label>
+                        <input type="text" id="card_name" name="card_name" value="{{ user.username }}" required>
                     </div>
-                    <button type="submit" class="primary-btn" style="width:100%;padding:15px;font-size:16px;font-weight:800;border-radius:30px;cursor:pointer;">Authorize &amp; Subscribe</button>
+                    <div class="form-group">
+                        <label for="card_number">Card Number</label>
+                        <input type="text" id="card_number" name="card_number" value="4242 4242 4242 4242" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="card_expiry">Expiry (MM/YY)</label>
+                            <input type="text" id="card_expiry" name="card_expiry" value="12/28" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="card_cvv">CVV</label>
+                            <input type="password" id="card_cvv" name="card_cvv" value="789" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="billing_zip">Billing Zip</label>
+                        <input type="text" id="billing_zip" name="billing_zip" value="90210" required>
+                    </div>
+                    <button type="submit" class="subscribe-btn">Authorize &amp; Subscribe</button>
                 </form>
             </div>
         </div>
     </main>
+
+    <script>
+    (function() {
+        var tierPrices = { basic: '$2.99/mo', plus: '$5.99/mo', premium: '$10.99/mo' };
+        var tierNames = { basic: 'Basic', plus: 'Plus', premium: 'Premium' };
+        var tierInput = document.getElementById('tier-input');
+        var nameEl = document.getElementById('selected-tier-name');
+        var priceEl = document.getElementById('selected-tier-price');
+        document.querySelectorAll('.pricing-select-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var tier = btn.getAttribute('data-tier');
+                tierInput.value = tier;
+                nameEl.textContent = tierNames[tier];
+                priceEl.textContent = tierPrices[tier];
+                document.querySelectorAll('.pricing-card').forEach(function(c) { c.classList.remove('pricing-card--selected'); });
+                btn.closest('.pricing-card').classList.add('pricing-card--selected');
+                document.getElementById('payment-section').scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    })();
+    </script>
 {% endblock %}
