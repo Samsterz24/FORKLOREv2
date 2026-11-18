@@ -8,6 +8,24 @@
         {% block stylesheets %}
             <link rel="stylesheet" href="{{ asset('styles/main.css') }}">
         {% endblock %}
+        <style>
+            .dev-banner {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 99999;
+                background: linear-gradient(90deg, #f59e0b, #d97706);
+                color: #1a1206;
+                text-align: center;
+                padding: 6px 12px;
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: 0.3px;
+                box-shadow: 0 2px 8px rgba(0,0,0,.15);
+            }
+            body { padding-top: 30px; }
+        </style>
 
         {% block page_styles %}{% endblock %}
 
@@ -16,6 +34,9 @@
         {% endblock %}
     </head>
     <body>
+        <div class="dev-banner" role="status" aria-live="polite">
+            ⚠️ This site is currently in development — features may change or break. Not the final version.
+        </div>
         {% block body %}{% endblock %}
 
         {% if app.user %}
