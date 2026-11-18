@@ -20,12 +20,13 @@ security:
             user_checker: App\Security\UserChecker
             form_login:
                 login_path: login
-                check_path: login
+                check_path: /forklore/login
                 username_parameter: username
                 password_parameter: password
                 enable_csrf: true
                 default_target_path: /forklore/
                 always_use_default_target_path: true
+                use_forward_on_error: false
             logout:
                 path: logout
                 target: home
