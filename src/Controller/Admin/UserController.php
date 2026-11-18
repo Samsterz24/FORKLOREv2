@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Entity\StaffWarning;
 use App\Entity\User;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
@@ -96,6 +97,24 @@ final class UserController extends AbstractController
                     $em->remove($target);
                     $em->flush();
                     $notice = sprintf('User %s deleted.', $username);
+                }
+            } elseif ($action === 'warn_user') {
+                $reason = trim((string) $request->request->get('reason', ''));
+                $currentUser = $this->getUser();
+                if ($this->isProtectedAdmin($target)) {
+                    $error = 'The protected admin account cannot be warned.';
+                } elseif (!$currentUser instanceof User) {
+                    $error = 'You must be logged in.';
+                } elseif ($reason === '') {
+                    $error = 'Please provide a warning reason.';
+                } else {
+                    $warning = new StaffWarning();
+                    $warning->setStaff($currentUser);
+                    $warning->setTargetUser($target);
+                    $warning->setReason($reason);
+                    $em->persist($warning);
+                    $em->flush();
+                    $notice = sprintf('Warning recorded for %s.', $target->getUsername());
                 }
             } else {
                 $error = 'Unknown action.';

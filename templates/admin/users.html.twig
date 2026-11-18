@@ -158,6 +158,21 @@
                                             </form>
                                         </div>
 
+                                        <div class="admin-action-section">
+                                            <div class="admin-action-section-title">⚠️ Warn User</div>
+                                            <form method="post" action="{{ path('admin_users') }}" class="admin-user-action-form"
+                                                  onsubmit="return confirm('Issue warning to {{ user.username|e('js') }}?');">
+                                                <input type="hidden" name="action" value="warn_user">
+                                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('admin_user_warn_user_' ~ user.id) }}">
+                                                <label>Reason<textarea name="reason" rows="3" required placeholder="Describe the reason for this warning..."></textarea></label>
+                                                <button type="submit" class="admin-btn admin-btn-ban"
+                                                        {{ user.username == protectedAdminUsername ? 'disabled title="Cannot warn protected admin"' : '' }}>
+                                                    Issue Warning
+                                                </button>
+                                            </form>
+                                        </div>
+
                                         <div class="admin-action-section admin-action-section--danger">
                                             <div class="admin-action-section-title">🗑️ Danger Zone</div>
                                             <form method="post" action="{{ path('admin_users') }}" class="admin-user-action-form"
