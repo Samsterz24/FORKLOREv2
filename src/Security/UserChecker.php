@@ -18,7 +18,12 @@ final class UserChecker implements UserCheckerInterface
         }
 
         if ($user->isBanned()) {
-            throw new CustomUserMessageAccountStatusException('Your account has been banned.');
+            $reason = $user->getBanReason();
+            $message = 'Your account has been banned.';
+            if ($reason !== null && trim($reason) !== '') {
+                $message .= ' Reason: ' . trim($reason);
+            }
+            throw new CustomUserMessageAccountStatusException($message);
         }
     }
 

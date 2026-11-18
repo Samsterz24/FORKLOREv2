@@ -34,6 +34,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private string $status = 'active';
 
     #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $banReason = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $bio = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -69,6 +72,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRole(string $role): self { $this->role = $role; return $this; }
     public function getStatus(): string { return $this->status; }
     public function setStatus(string $status): self { $this->status = $status; return $this; }
+    public function getBanReason(): ?string { return $this->banReason; }
+    public function setBanReason(?string $banReason): self { $this->banReason = $banReason; return $this; }
     public function isBanned(): bool { return $this->status === 'banned'; }
     public function isStaff(): bool { return $this->role === 'ROLE_STAFF'; }
     public function getBio(): ?string { return $this->bio; }

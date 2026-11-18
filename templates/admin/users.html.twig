@@ -121,11 +121,18 @@
                                         <input type="hidden" name="user_id" value="{{ user.id }}">
                                         <input type="hidden" name="_token" value="{{ csrf_token('admin_user_toggle_status_' ~ user.id) }}">
                                         {% if user.status == 'active' %}
+                                            <label style="display:block;margin-bottom:6px;">
+                                                Ban reason (optional)<br>
+                                                <input type="text" name="ban_reason" maxlength="255" style="width:100%;padding:6px;">
+                                            </label>
                                             <button type="submit" class="admin-btn admin-btn-ban"
                                                     {{ (user.id == currentAdminId or user.username == protectedAdminUsername) ? 'disabled title="Cannot ban or disable protected admin"' : '' }}>
                                                 Disable/Ban
                                             </button>
                                         {% else %}
+                                            {% if user.banReason %}
+                                                <div class="admin-muted" style="margin-bottom:6px;">Reason: {{ user.banReason }}</div>
+                                            {% endif %}
                                             <button type="submit" class="admin-btn admin-btn-unban"
                                                     {{ user.username == protectedAdminUsername ? 'disabled title="Protected admin account"' : '' }}>Activate/Unban</button>
                                         {% endif %}

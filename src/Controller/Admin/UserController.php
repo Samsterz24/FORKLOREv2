@@ -55,7 +55,14 @@ final class UserController extends AbstractController
                 } elseif ($currentId !== null && $target->getId() === $currentId) {
                     $error = 'You cannot change your own account status.';
                 } else {
-                    $target->setStatus($target->getStatus() === 'banned' ? 'active' : 'banned');
+                    $newStatus = $target->getStatus() === 'banned' ? 'active' : 'banned';
+                    $target->setStatus($newStatus);
+                    if ($newStatus === 'banned') {
+                        $reason = trim((string) $request->request->get('ban_reason', ''));
+                        $target->setBanReason($reason !== '' ? $reason : null);
+                    } else {
+                        $target->setBanReason(null);
+                    }
                     $em->flush();
                     $notice = sprintf('Status updated for %s.', $target->getUsername());
                 }
