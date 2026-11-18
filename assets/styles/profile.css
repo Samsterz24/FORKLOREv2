@@ -583,3 +583,29 @@
 .profile-warnings-actions {
     margin-top: 12px;
 }
+
+/* Profile two-column layout (main + sidebar) ----------------------- */
+.profile-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 24px;
+    align-items: start;
+}
+
+.profile-main {
+    min-width: 0;
+}
+
+.profile-sidebar {
+    position: sticky;
+    top: 20px;
+}
+
+@media (max-width: 900px) {
+    .profile-layout {
+        grid-template-columns: 1fr;
+    }
+    .profile-sidebar {
+        position: static;
+    }
+}

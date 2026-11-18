@@ -11,6 +11,8 @@
     <main class="profile-page-wrapper">
         {% if notice %}<div class="support-inline-alert support-inline-alert--success" role="status">{{ notice }}</div>{% endif %}
         {% if error %}<div class="support-inline-alert support-inline-alert--error" role="alert">{{ error }}</div>{% endif %}
+        <div class="profile-layout">
+        <div class="profile-main">
         <div class="profile-card">
             <div class="profile-avatar-box">{{ profile.initial }}</div>
 
@@ -57,30 +59,6 @@
                     <span class="stat-item"><strong>{{ submittedStories|length }}</strong> Stories</span>
                 </div>
             </div>
-
-            {% if isOwner and warnings is defined and warnings|length > 0 %}
-            <div class="profile-warnings">
-                <div class="profile-warnings-header">
-                    <span class="profile-warnings-icon">⚠️</span>
-                    <h3>Staff Warnings ({{ warnings|length }})</h3>
-                </div>
-                <ul class="profile-warnings-list">
-                    {% for w in warnings %}
-                        <li class="profile-warning-item">
-                            <div class="profile-warning-meta">
-                                <strong>{{ w.createdAt|date('M d, Y H:i') }}</strong>
-                                {% if not w.isRead %}<span class="profile-warning-new">New</span>{% endif %}
-                            </div>
-                            <p class="profile-warning-reason">{{ w.reason }}</p>
-                        </li>
-                    {% endfor %}
-                </ul>
-                <form method="post" action="{{ path('profile_acknowledge_warnings') }}" class="profile-warnings-actions">
-                    <input type="hidden" name="_token" value="{{ csrf_token('profile_acknowledge_warnings') }}">
-                    <button type="submit" class="btn-edit-bio">Mark as Read</button>
-                </form>
-            </div>
-            {% endif %}
 
             {% if isOwner %}
             <div class="profile-actions-bar">
@@ -280,6 +258,33 @@
                 </div>
             {% endif %}
         {% endif %}
+        </div>
+        {% if isOwner and warnings is defined and warnings|length > 0 %}
+        <aside class="profile-sidebar">
+            <div class="profile-warnings">
+                <div class="profile-warnings-header">
+                    <span class="profile-warnings-icon">⚠️</span>
+                    <h3>Staff Warnings ({{ warnings|length }})</h3>
+                </div>
+                <ul class="profile-warnings-list">
+                    {% for w in warnings %}
+                        <li class="profile-warning-item">
+                            <div class="profile-warning-meta">
+                                <strong>{{ w.createdAt|date('M d, Y H:i') }}</strong>
+                                {% if not w.isRead %}<span class="profile-warning-new">New</span>{% endif %}
+                            </div>
+                            <p class="profile-warning-reason">{{ w.reason }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <form method="post" action="{{ path('profile_acknowledge_warnings') }}" class="profile-warnings-actions">
+                    <input type="hidden" name="_token" value="{{ csrf_token('profile_acknowledge_warnings') }}">
+                    <button type="submit" class="btn-edit-bio">Mark as Read</button>
+                </form>
+            </div>
+        </aside>
+        {% endif %}
+    </div>
     </main>
     {% else %}
     <main class="profile-page-wrapper">
