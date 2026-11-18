@@ -26,6 +26,9 @@ class Subscription
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $expiresAt = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $paymentProof = null;
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -43,5 +46,7 @@ class Subscription
     public function setStatus(string $status): self { $this->status = $status; return $this; }
     public function getExpiresAt(): ?\DateTimeImmutable { return $this->expiresAt; }
     public function setExpiresAt(?\DateTimeImmutable $v): self { $this->expiresAt = $v; return $this; }
+    public function getPaymentProof(): ?string { return $this->paymentProof; }
+    public function setPaymentProof(?string $v): self { $this->paymentProof = $v; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
 }
