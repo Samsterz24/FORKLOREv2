@@ -12,7 +12,8 @@
             <div id="banned-modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:9999;">
                 <div role="dialog" aria-modal="true" aria-labelledby="banned-title" style="background:#fff;max-width:420px;width:90%;border-radius:12px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.25);text-align:center;">
                     <h3 id="banned-title" style="margin:0 0 8px;color:#c0392b;">Account Banned</h3>
-                    <p style="margin:0 0 16px;">{{ error is defined and error ? (error.messageKey == 'Your account has been banned.' ? 'Your account has been banned.' : error.messageKey|trans(error.messageData, 'security')) : 'Your account has been banned.' }} If you believe this is a mistake, please contact support.</p>
+                    <p style="margin:0 0 12px;">{{ error is defined and error ? (error.messageKey == 'Your account has been banned.' ? 'Your account has been banned.' : error.messageKey|trans(error.messageData, 'security')) : 'Your account has been banned.' }}</p>
+                    <p style="margin:0 0 16px;color:#634f40;font-size:13px;">If you believe this is a mistake, please contact support.</p>
                     <button type="button" onclick="document.getElementById('banned-modal-overlay').style.display='none'" class="primary-btn">OK</button>
                 </div>
             </div>
@@ -21,13 +22,9 @@
             <h2>Login to ForkLore</h2>
             <p class="auth-subtitle">Welcome back! Sign in to continue sharing recipes.</p>
 
-            {% if error %}
-                <div id="login-error-modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:9999;">
-                    <div role="dialog" aria-modal="true" aria-labelledby="login-error-title" style="background:#fff;max-width:420px;width:90%;border-radius:12px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.25);text-align:center;">
-                        <h3 id="login-error-title" style="margin:0 0 8px;color:#c0392b;">Login Failed</h3>
-                        <p style="margin:0 0 16px;">{{ error.messageKey == 'Your account has been banned.' ? 'Your account has been banned. You cannot sign in.' : error.messageKey|trans(error.messageData, 'security') }}</p>
-                        <button type="button" onclick="document.getElementById('login-error-modal-overlay').style.display='none'" class="primary-btn">OK</button>
-                    </div>
+            {% if error and not ('banned' in (error.messageKey|default('')|lower)) %}
+                <div class="support-inline-alert support-inline-alert--error" role="alert" style="margin-bottom:12px;">
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
                 </div>
             {% endif %}
 
