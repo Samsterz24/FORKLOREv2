@@ -88,76 +88,83 @@
                                 <details class="admin-user-actions">
                                     <summary class="admin-btn">Manage ▾</summary>
                                     <div class="admin-user-actions-panel">
-                                        {# Edit details #}
-                                        <form method="post" action="{{ path('admin_users') }}" class="admin-user-action-form">
-                                            <input type="hidden" name="action" value="update_user">
-                                            <input type="hidden" name="user_id" value="{{ user.id }}">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_user_update_user_' ~ user.id) }}">
-                                            <label>Username<input type="text" name="username" value="{{ user.username }}" required maxlength="50"></label>
-                                            <label>Email<input type="email" name="email" value="{{ user.email }}" required maxlength="100"></label>
-                                            <button type="submit" class="admin-btn admin-btn-save">Save Details</button>
-                                        </form>
+                                        <div class="admin-action-section">
+                                            <div class="admin-action-section-title">✏️ Edit Details</div>
+                                            <form method="post" action="{{ path('admin_users') }}" class="admin-user-action-form">
+                                                <input type="hidden" name="action" value="update_user">
+                                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('admin_user_update_user_' ~ user.id) }}">
+                                                <label>Username<input type="text" name="username" value="{{ user.username }}" required maxlength="50"></label>
+                                                <label>Email<input type="email" name="email" value="{{ user.email }}" required maxlength="100"></label>
+                                                <button type="submit" class="admin-btn admin-btn-save">Save Details</button>
+                                            </form>
+                                        </div>
 
-                                        {# Reset password #}
-                                        <form method="post" action="{{ path('admin_users') }}" class="admin-user-action-form"
-                                              onsubmit="return confirm('Reset password for {{ user.username|e('js') }}?');">
-                                            <input type="hidden" name="action" value="reset_password">
-                                            <input type="hidden" name="user_id" value="{{ user.id }}">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_user_reset_password_' ~ user.id) }}">
-                                            <label>New password<input type="password" name="new_password" required minlength="6"></label>
-                                            <button type="submit" class="admin-btn">Reset Password</button>
-                                        </form>
+                                        <div class="admin-action-section">
+                                            <div class="admin-action-section-title">🔑 Reset Password</div>
+                                            <form method="post" action="{{ path('admin_users') }}" class="admin-user-action-form"
+                                                  onsubmit="return confirm('Reset password for {{ user.username|e('js') }}?');">
+                                                <input type="hidden" name="action" value="reset_password">
+                                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('admin_user_reset_password_' ~ user.id) }}">
+                                                <label>New password<input type="password" name="new_password" required minlength="6" placeholder="min 6 chars"></label>
+                                                <button type="submit" class="admin-btn">Reset Password</button>
+                                            </form>
+                                        </div>
 
-                                        {# Role #}
-                                        <form method="post" action="{{ path('admin_users') }}" class="admin-user-action-form">
-                                            <input type="hidden" name="action" value="update_role">
-                                            <input type="hidden" name="user_id" value="{{ user.id }}">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_user_update_role_' ~ user.id) }}">
-                                            <label>Role
-                                                <select name="role">
-                                                    <option value="user" {{ user.role == 'user' ? 'selected' : '' }}>User</option>
-                                                    <option value="staff" {{ user.role == 'staff' ? 'selected' : '' }}>Staff</option>
-                                                    <option value="admin" {{ user.role == 'admin' ? 'selected' : '' }}>Admin</option>
-                                                </select>
-                                            </label>
-                                            <button type="submit" class="admin-btn admin-btn-save"
-                                                    {{ user.id == currentAdminId ? 'disabled title="Cannot change your own role"' : '' }}>
-                                                Set Role
-                                            </button>
-                                        </form>
-
-                                        {# Status toggle #}
-                                        <form method="post" action="{{ path('admin_users') }}" class="admin-user-action-form"
-                                              onsubmit="return confirm('Toggle status for {{ user.username|e('js') }}?');">
-                                            <input type="hidden" name="action" value="toggle_status">
-                                            <input type="hidden" name="user_id" value="{{ user.id }}">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_user_toggle_status_' ~ user.id) }}">
-                                            {% if user.status == 'active' %}
-                                                <label>Ban reason (optional)<input type="text" name="ban_reason" maxlength="255" placeholder="Reason for ban"></label>
-                                                <button type="submit" class="admin-btn admin-btn-ban"
-                                                        {{ (user.id == currentAdminId or user.username == protectedAdminUsername) ? 'disabled title="Cannot ban or disable protected admin"' : '' }}>
-                                                    Disable / Ban
+                                        <div class="admin-action-section">
+                                            <div class="admin-action-section-title">🛡️ Role &amp; Status</div>
+                                            <form method="post" action="{{ path('admin_users') }}" class="admin-user-action-form">
+                                                <input type="hidden" name="action" value="update_role">
+                                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('admin_user_update_role_' ~ user.id) }}">
+                                                <label>Role
+                                                    <select name="role">
+                                                        <option value="user" {{ user.role == 'user' ? 'selected' : '' }}>User</option>
+                                                        <option value="staff" {{ user.role == 'staff' ? 'selected' : '' }}>Staff</option>
+                                                        <option value="admin" {{ user.role == 'admin' ? 'selected' : '' }}>Admin</option>
+                                                    </select>
+                                                </label>
+                                                <button type="submit" class="admin-btn admin-btn-save"
+                                                        {{ user.id == currentAdminId ? 'disabled title="Cannot change your own role"' : '' }}>
+                                                    Set Role
                                                 </button>
-                                            {% else %}
-                                                {% if user.banReason %}
-                                                    <div class="admin-muted" style="font-size:12px;">Reason: {{ user.banReason }}</div>
-                                                {% endif %}
-                                                <button type="submit" class="admin-btn admin-btn-unban"
-                                                        {{ user.username == protectedAdminUsername ? 'disabled title="Protected admin account"' : '' }}>Activate / Unban</button>
-                                            {% endif %}
-                                        </form>
+                                            </form>
 
-                                        {# Delete #}
-                                        <form method="post" action="{{ path('admin_users') }}" class="admin-user-action-form"
-                                              onsubmit="return confirm('Delete user {{ user.username|e('js') }}? This cannot be undone.');">
-                                            <input type="hidden" name="action" value="delete_user">
-                                            <input type="hidden" name="user_id" value="{{ user.id }}">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_user_delete_user_' ~ user.id) }}">
-                                            <button type="submit" class="admin-btn admin-btn-ban"
-                                                    {{ (user.id == currentAdminId or user.username == protectedAdminUsername) ? 'disabled title="Cannot delete protected admin"' : '' }}>
-                                                Delete User
-                                            </button>
-                                        </form>
+                                            <form method="post" action="{{ path('admin_users') }}" class="admin-user-action-form"
+                                                  onsubmit="return confirm('Toggle status for {{ user.username|e('js') }}?');">
+                                                <input type="hidden" name="action" value="toggle_status">
+                                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('admin_user_toggle_status_' ~ user.id) }}">
+                                                {% if user.status == 'active' %}
+                                                    <label>Ban reason (optional)<input type="text" name="ban_reason" maxlength="255" placeholder="Reason for ban"></label>
+                                                    <button type="submit" class="admin-btn admin-btn-ban"
+                                                            {{ (user.id == currentAdminId or user.username == protectedAdminUsername) ? 'disabled title="Cannot ban or disable protected admin"' : '' }}>
+                                                        Disable / Ban
+                                                    </button>
+                                                {% else %}
+                                                    {% if user.banReason %}
+                                                        <div class="admin-muted" style="font-size:12px;padding:4px 0;">Reason: {{ user.banReason }}</div>
+                                                    {% endif %}
+                                                    <button type="submit" class="admin-btn admin-btn-unban"
+                                                            {{ user.username == protectedAdminUsername ? 'disabled title="Protected admin account"' : '' }}>Activate / Unban</button>
+                                                {% endif %}
+                                            </form>
+                                        </div>
+
+                                        <div class="admin-action-section admin-action-section--danger">
+                                            <div class="admin-action-section-title">🗑️ Danger Zone</div>
+                                            <form method="post" action="{{ path('admin_users') }}" class="admin-user-action-form"
+                                                  onsubmit="return confirm('Delete user {{ user.username|e('js') }}? This cannot be undone.');">
+                                                <input type="hidden" name="action" value="delete_user">
+                                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('admin_user_delete_user_' ~ user.id) }}">
+                                                <button type="submit" class="admin-btn admin-btn-ban"
+                                                        {{ (user.id == currentAdminId or user.username == protectedAdminUsername) ? 'disabled title="Cannot delete protected admin"' : '' }}>
+                                                    Delete User
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </details>
                             </td>

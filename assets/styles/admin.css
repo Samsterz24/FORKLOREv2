@@ -1679,3 +1679,22 @@ body {
     margin-top: 2px;
 }
 .admin-user-cell strong { display: block; }
+
+/* User management action sections --------------------------------- */
+.admin-action-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 0;
+    border-bottom: 1px dashed #f0e6d8;
+}
+.admin-action-section:last-child { border-bottom: 0; }
+.admin-action-section--danger { background: #fff8f8; margin: 0 -14px -14px; padding: 10px 14px 14px; border-radius: 0 0 12px 12px; border-top: 1px solid #f5d6d6; }
+.admin-action-section-title {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--admin-brown);
+    margin-bottom: 4px;
+}
