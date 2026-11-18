@@ -28,9 +28,14 @@
         {% endif %}
         {% if app.user %}
             <div class="user-menu">
-                <button type="button" class="user-menu-trigger">{{ app.user.userIdentifier }} ▾</button>
+                <button type="button" class="user-menu-trigger">
+                    {{ app.user.userIdentifier }} ▾
+                    {% if unreadWarningCount is defined and unreadWarningCount > 0 %}
+                        <span class="notif-badge">{{ unreadWarningCount }}</span>
+                    {% endif %}
+                </button>
                 <div class="user-menu-dropdown">
-                    <a href="{{ path('profile') }}">View Profile</a>
+                    <a href="{{ path('profile') }}">View Profile{% if unreadWarningCount is defined and unreadWarningCount > 0 %} <span class="notif-badge-inline">({{ unreadWarningCount }} new)</span>{% endif %}</a>
                     <a href="{{ path('logout') }}">Logout</a>
                 </div>
             </div>
@@ -41,6 +46,8 @@
                 .user-menu:hover .user-menu-dropdown, .user-menu:focus-within .user-menu-dropdown { display: flex; }
                 .user-menu-dropdown a { padding: 10px 14px; text-decoration: none; color: #17120d; font-size: 14px; }
                 .user-menu-dropdown a:hover { background: #fff8f4; color: #d3541b; }
+                .notif-badge { display: inline-block; background: #c0392b; color: #fff; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 10px; margin-left: 4px; vertical-align: top; }
+                .notif-badge-inline { color: #c0392b; font-weight: 700; font-size: 12px; }
             </style>
         {% else %}
             <a href="{{ path('login') }}" class="login-nav-btn">Login</a>

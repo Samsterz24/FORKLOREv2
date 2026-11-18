@@ -8,6 +8,7 @@ use App\Entity\Favorite;
 use App\Entity\Recipe;
 use App\Entity\Story;
 use App\Entity\User;
+use App\Repository\StaffWarningRepository;
 use App\Repository\StorySaveRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,8 +21,25 @@ final class ProfileController extends AbstractController
 {
     public function __construct(private EntityManagerInterface $em) {}
 
+    #[Route('/profile/warnings/acknowledge', name: 'profile_acknowledge_warnings', methods: ['POST'])]
+    public function acknowledgeWarnings(Request $request, StaffWarningRepository $warningRepository): Response
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+        $token = (string) $request->request->get('_token', '');
+        if (!$this->isCsrfTokenValid('profile_acknowledge_warnings', $token)) {
+            $this->addFlash('error', 'Invalid CSRF token.');
+            return $this->redirectToRoute('profile');
+        }
+        $warningRepository->markAllReadForUser($user);
+        $this->addFlash('success', 'Notifications cleared.');
+        return $this->redirectToRoute('profile');
+    }
+
     #[Route('/profile', name: 'profile', methods: ['GET', 'POST'])]
-    public function index(Request $request, StorySaveRepository $storySaveRepository): Response
+    public function index(Request $request, StorySaveRepository $storySaveRepository, StaffWarningRepository $warningRepository): Response
     {
         $user = $this->getUser();
         if (!$user instanceof User) {
@@ -34,16 +52,18 @@ final class ProfileController extends AbstractController
                 'savedRecipes' => [],
                 'savedStories' => [],
                 'submittedStories' => [],
+                'warnings' => [],
+                'unreadWarningCount' => 0,
                 'notice' => null,
                 'error' => null,
             ]);
         }
 
-        return $this->showProfile($request, $user, true, $storySaveRepository);
+        return $this->showProfile($request, $user, true, $storySaveRepository, $warningRepository);
     }
 
     #[Route('/profile/{username}', name: 'profile_show', methods: ['GET'], requirements: ['username' => '[A-Za-z0-9_.-]+'])]
-    public function show(string $username, Request $request, StorySaveRepository $storySaveRepository): Response
+    public function show(string $username, Request $request, StorySaveRepository $storySaveRepository, StaffWarningRepository $warningRepository): Response
     {
         $profile = $this->em->getRepository(User::class)->findOneBy(['username' => $username]);
         if (!$profile) {
@@ -53,7 +73,7 @@ final class ProfileController extends AbstractController
         $current = $this->getUser();
         $isOwner = $current instanceof User && $current->getId() === $profile->getId();
 
-        return $this->showProfile($request, $profile, $isOwner, $storySaveRepository);
+        return $this->showProfile($request, $profile, $isOwner, $storySaveRepository, $warningRepository);
     }
 
     #[Route('/profile/recipe/{id}/visibility', name: 'profile_recipe_visibility', methods: ['POST'], requirements: ['id' => '\d+'])]
@@ -79,7 +99,7 @@ final class ProfileController extends AbstractController
         return $this->redirectToRoute('profile', ['tab' => 'recipes']);
     }
 
-    private function showProfile(Request $request, User $profile, bool $isOwner, StorySaveRepository $storySaveRepository): Response
+    private function showProfile(Request $request, User $profile, bool $isOwner, StorySaveRepository $storySaveRepository, StaffWarningRepository $warningRepository): Response
     {
         $tab = (string) $request->query->get('tab', 'recipes');
         if (!in_array($tab, ['recipes', 'saved', 'stories'], true)) {
@@ -111,12 +131,14 @@ final class ProfileController extends AbstractController
 
         $savedRecipes = [];
         $savedStories = [];
+        $warnings = [];
         if ($isOwner) {
             $favorites = $this->em->getRepository(Favorite::class)->findBy(['user' => $profile], ['createdAt' => 'DESC']);
             foreach ($favorites as $fav) {
                 $savedRecipes[] = $fav->getRecipe();
             }
             $savedStories = $storySaveRepository->findStoriesSavedByUser($profile);
+            $warnings = $warningRepository->findBy(['targetUser' => $profile], ['createdAt' => 'DESC']);
         }
 
         return $this->render('profile/index.html.twig', [
@@ -127,6 +149,7 @@ final class ProfileController extends AbstractController
             'savedRecipes' => $savedRecipes,
             'savedStories' => $savedStories,
             'submittedStories' => $submittedStories,
+            'warnings' => $warnings,
             'notice' => $notice,
             'error' => $error,
         ]);

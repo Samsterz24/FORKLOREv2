@@ -29,6 +29,9 @@ class StaffWarning
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $seenAt = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -42,4 +45,7 @@ class StaffWarning
     public function getReason(): string { return $this->reason; }
     public function setReason(string $reason): self { $this->reason = $reason; return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+    public function getSeenAt(): ?\DateTimeImmutable { return $this->seenAt; }
+    public function setSeenAt(?\DateTimeImmutable $seenAt): self { $this->seenAt = $seenAt; return $this; }
+    public function isRead(): bool { return $this->seenAt !== null; }
 }

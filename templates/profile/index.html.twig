@@ -58,6 +58,24 @@
                 </div>
             </div>
 
+            {% if isOwner and warnings is defined and warnings|length > 0 %}
+            <div class="profile-warnings" style="margin:16px 0;padding:12px 16px;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;">
+                <h3 style="margin:0 0 8px;color:#856404;">⚠️ Staff Warnings ({{ warnings|length }})</h3>
+                <ul style="margin:0;padding-left:20px;">
+                    {% for w in warnings %}
+                        <li style="margin-bottom:8px;">
+                            <strong>{{ w.createdAt|date('M d, Y H:i') }}</strong> — {{ w.reason }}
+                            {% if not w.isRead %}<span style="color:#c0392b;font-weight:700;">(new)</span>{% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+                <form method="post" action="{{ path('profile_acknowledge_warnings') }}" style="margin-top:8px;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('profile_acknowledge_warnings') }}">
+                    <button type="submit" class="btn-edit-bio">Mark as Read</button>
+                </form>
+            </div>
+            {% endif %}
+
             {% if isOwner %}
             <div class="profile-actions-bar">
                 {% if is_granted('ROLE_ADMIN') %}
