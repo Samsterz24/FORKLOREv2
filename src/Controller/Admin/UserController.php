@@ -116,6 +116,7 @@ final class UserController extends AbstractController
                 'email' => $user->getEmail(),
                 'role' => $role,
                 'status' => $user->getStatus(),
+                'banReason' => $user->getBanReason(),
                 'createdAt' => $user->getCreatedAt(),
             ];
         }, $users);
