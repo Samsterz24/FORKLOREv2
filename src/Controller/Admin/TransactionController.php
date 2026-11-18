@@ -23,13 +23,24 @@ final class TransactionController extends AbstractController
 
         $subscriptions = $em->getRepository(Subscription::class)->findBy([], ['createdAt' => 'DESC']);
 
-        $all = array_map(static function (Subscription $sub): array {
+        $tierPrices = ['basic' => 2.99, 'plus' => 5.99, 'premium' => 10.99];
+
+        $all = array_map(static function (Subscription $sub) use ($tierPrices): array {
             $user = $sub->getUser();
             $plan = strtolower($sub->getPlan());
-            $amount = str_contains($plan, 'year') ? 29.99 : 2.99;
+            $tier = 'basic';
+            foreach (['basic', 'plus', 'premium'] as $t) {
+                if (str_contains($plan, $t)) {
+                    $tier = $t;
+                    break;
+                }
+            }
+            $monthlyPrice = $tierPrices[$tier] ?? 2.99;
+            $isAnnual = str_contains($plan, 'year');
+            $amount = $isAnnual ? $monthlyPrice * 10 : $monthlyPrice;
             $subStatus = strtolower($sub->getStatus());
             $isActive = $subStatus === 'active' && ($sub->getExpiresAt() === null || $sub->getExpiresAt() > new \DateTimeImmutable());
-            $derivedMethod = str_contains($plan, 'year') ? 'Mock Card' : 'Mock GCash';
+            $derivedMethod = $sub->getPaymentProof() ? 'GCash' : 'Credit/Debit Card';
 
             return [
                 'id' => $sub->getId(),
@@ -38,6 +49,7 @@ final class TransactionController extends AbstractController
                 'email' => $user->getEmail(),
                 'amount' => $amount,
                 'method' => $derivedMethod,
+                'tier' => ucfirst($tier),
                 'status' => $subStatus ?: 'unknown',
                 'foodieActive' => $isActive,
                 'expires' => $sub->getExpiresAt(),

@@ -2,7 +2,7 @@
 
 {% block title %}Subscription Transactions | ForkLore Admin{% endblock %}
 {% block admin_heading %}Subscription Transactions &amp; Audit Log{% endblock %}
-{% block admin_subheading %}Audit records for Lore Foodie Stamp memberships ($2.99/mo &amp; $29.99/yr).{% endblock %}
+{% block admin_subheading %}Audit records for Lore Foodie Stamp memberships (Basic $2.99, Plus $5.99, Premium $10.99/mo).{% endblock %}
 
 {% block admin_content %}
     <section class="admin-stats-grid">
@@ -109,7 +109,7 @@
                             <td><span class="admin-amount-highlight">${{ transaction.amount|number_format(2, '.', ',') }}</span></td>
                             <td>
                                 <span class="admin-method-tag">
-                                    {{ transaction.method|lower == 'mock gcash' ? '📱' : '💳' }}
+                                    {{ transaction.method|lower == 'gcash' ? '📱' : '💳' }}
                                     {{ transaction.method }}
                                 </span>
                             </td>
